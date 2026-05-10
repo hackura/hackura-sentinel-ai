@@ -1,67 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { GlassCard } from '@/components/ui';
+import { GlassCard, LoadingSpinner } from '@/components/ui';
+import { getScans } from '@/lib/api';
 import { ScanResult } from '@/types';
 
-const mockHistory: ScanResult[] = [
-  {
-    id: '1',
-    url: 'https://secure-payment-update.com',
-    risk_score: 87,
-    risk_level: 'HIGH',
-    ai_explanation: 'Domain impersonation detected.',
-    risk_signals: ['Domain Spoofing', 'SSL Mismatch'],
-    confidence_score: 0.94,
-    created_at: new Date(Date.now() - 3600000).toISOString(),
-  },
-  {
-    id: '2',
-    url: 'https://github.com/torvalds/linux',
-    risk_score: 8,
-    risk_level: 'LOW',
-    ai_explanation: 'Legitimate repository.',
-    risk_signals: [],
-    confidence_score: 0.99,
-    created_at: new Date(Date.now() - 7200000).toISOString(),
-  },
-  {
-    id: '3',
-    url: 'suspicious-crypto-airdrop.net',
-    risk_score: 92,
-    risk_level: 'HIGH',
-    ai_explanation: 'Classic crypto scam.',
-    risk_signals: ['Scam Pattern', 'Wallet Draining'],
-    confidence_score: 0.97,
-    created_at: new Date(Date.now() - 86400000).toISOString(),
-  },
-  {
-    id: '4',
-    url: 'https://www.google.com',
-    risk_score: 2,
-    risk_level: 'LOW',
-    ai_explanation: 'Legitimate company domain.',
-    risk_signals: [],
-    confidence_score: 1.0,
-    created_at: new Date(Date.now() - 172800000).toISOString(),
-  },
-  {
-    id: '5',
-    url: 'verify-account-urgently.io',
-    risk_score: 78,
-    risk_level: 'HIGH',
-    ai_explanation: 'Phishing domain impersonating legitimate service.',
-    risk_signals: ['Urgency Tactic', 'Account Verification Scam'],
-    confidence_score: 0.91,
-    created_at: new Date(Date.now() - 259200000).toISOString(),
-  },
-];
-
 export default function HistoryPage() {
-  const [scans, setScans] = useState(mockHistory);
+  const [scans, setScans] = useState<ScanResult[]>([]);
   const [filter, setFilter] = useState<'ALL' | 'HIGH' | 'MEDIUM' | 'LOW'>('ALL');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetch() {
+      try {
+        const data = await getScans();
+        setScans(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Failed to fetch history:', error);
+        setScans([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetch();
+  }, []);
 
   const filteredScans = scans.filter(
     scan => filter === 'ALL' || scan.risk_level === filter
@@ -89,15 +53,32 @@ export default function HistoryPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="space-y-6 md:space-y-8">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Scan History</h1>
+          <p className="text-sm md:text-base text-zinc-400">View and review your previous threat scans</p>
+        </motion.div>
+        <GlassCard className="h-64 flex items-center justify-center">
+          <div className="text-center">
+            <LoadingSpinner size="lg" />
+            <p className="text-zinc-400 mt-4">Loading scan history...</p>
+          </div>
+        </GlassCard>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-4xl font-bold text-white mb-2">Scan History</h1>
-        <p className="text-zinc-400">View and review your previous threat scans</p>
+        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Scan History</h1>
+        <p className="text-sm md:text-base text-zinc-400">View and review your previous threat scans</p>
       </motion.div>
 
       {/* Filters */}
@@ -216,7 +197,7 @@ export default function HistoryPage() {
                     <div>
                       <p className="text-zinc-400 text-sm mb-2">Detected Signals</p>
                       <div className="flex flex-wrap gap-2">
-                        {scan.risk_signals.map((signal, j) => (
+                        {scan.risk_signals.map((signal: string, j: number) => (
                           <span
                             key={j}
                             className="text-xs bg-red-900/30 text-red-300 px-2 py-1 rounded border border-red-700/50"

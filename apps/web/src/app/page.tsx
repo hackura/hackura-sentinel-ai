@@ -9,13 +9,13 @@ export default function Home() {
     <main className="min-h-screen bg-gradient-to-br from-black via-purple-900/10 to-black">
       {/* Navigation */}
       <nav className="flex items-center justify-between px-8 py-6 border-b border-zinc-800/50">
-        <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-2xl font-bold text-white flex items-center gap-2">
+        <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} className="text-2xl font-bold text-white flex items-center gap-2">
           <span className="text-2xl">🛡️</span>
           Hackura Sentinel AI
         </motion.h1>
-        <div className="space-x-4 text-sm text-zinc-300">
-          <Link href="#features" className="hover:text-purple-400 transition">Features</Link>
-          <Link href="#security" className="hover:text-purple-400 transition">Security</Link>
+        <div className="space-x-4 text-sm text-purple-300 font-medium">
+          <Link href="#features" className="hover:text-purple-200 transition">Features</Link>
+          <Link href="#security" className="hover:text-purple-200 transition">Security</Link>
         </div>
       </nav>
 
@@ -24,12 +24,12 @@ export default function Home() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.6 }}
         >
-          <h2 className="text-6xl font-bold leading-tight mb-6 bg-gradient-to-r from-white via-purple-200 to-purple-400 bg-clip-text text-transparent">
+          <h2 className="text-6xl font-bold leading-tight mb-6 bg-gradient-to-r from-purple-200 via-white to-purple-300 bg-clip-text text-transparent">
             AI-Powered Trust Intelligence
           </h2>
-          <p className="text-lg text-zinc-400 max-w-2xl mx-auto mb-12">
+          <p className="text-lg text-zinc-300 max-w-2xl mx-auto mb-12">
             Detect phishing, scams, malicious infrastructure, and misinformation using cutting-edge AI and graph intelligence powered by Neo4j.
           </p>
 
@@ -73,7 +73,7 @@ export default function Home() {
 
       {/* Features */}
       <section id="features" className="px-8 py-20 max-w-6xl mx-auto">
-        <h3 className="text-3xl font-bold text-center mb-12">Core Features</h3>
+        <h3 className="text-4xl font-bold text-center mb-12 bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">Core Features</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
             { icon: '🔍', title: 'URL Scanning', desc: 'Analyze URLs, domains, and text for threats' },

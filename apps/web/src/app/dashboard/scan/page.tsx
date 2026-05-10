@@ -19,44 +19,24 @@ export default function ScanPage() {
     setInput(scanInput);
 
     try {
-      // Mock delay for demo
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Simulate response
-      const mockResult: ScanResult = {
-        id: Date.now().toString(),
-        url: scanInput,
-        risk_score: Math.floor(Math.random() * 100),
-        risk_level: Math.random() > 0.5 ? 'HIGH' : Math.random() > 0.5 ? 'MEDIUM' : 'LOW',
-        ai_explanation: `This ${scanInput} has been analyzed using advanced threat detection algorithms. The analysis includes domain reputation, SSL certificate validation, content analysis, and comparison with known threat databases.`,
-        risk_signals: [
-          'Suspicious Domain Pattern',
-          'Low Domain Age',
-          'Phishing Template Match',
-        ].slice(0, Math.floor(Math.random() * 4)),
-        confidence_score: 0.85 + Math.random() * 0.15,
-        created_at: new Date().toISOString(),
-      };
-
-      setResult(mockResult);
-      // In production, call: const result = await performScan(scanInput);
-    } catch (err) {
-      setError('Failed to perform scan. Please try again.');
-      console.error(err);
+      const data = await performScan(scanInput);
+      setResult(data);
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message || 'Failed to perform scan.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-4xl font-bold text-white mb-2">Threat Scanner</h1>
-        <p className="text-zinc-400">Analyze URLs, domains, and text for security threats</p>
+        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Threat Scanner</h1>
+        <p className="text-sm md:text-base text-zinc-400">Analyze URLs, domains, and text for security threats</p>
       </motion.div>
 
       {/* Scan Input */}
@@ -112,7 +92,7 @@ export default function ScanPage() {
               <RiskBadge level={result.risk_level} />
             </div>
 
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
               {/* Risk Score */}
               <div>
                 <p className="text-zinc-400 text-sm mb-3">Risk Score</p>

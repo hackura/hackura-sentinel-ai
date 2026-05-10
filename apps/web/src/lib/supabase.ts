@@ -40,7 +40,35 @@ export async function signInWithGoogle() {
   });
 }
 
+// Sign in with GitHub
+export async function signInWithGitHub() {
+  return supabase.auth.signInWithOAuth({
+    provider: 'github',
+    options: {
+      redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`,
+    },
+  });
+}
+
 // Sign out
 export async function signOut() {
   return supabase.auth.signOut();
+}
+
+// Get session
+export async function getSession() {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session;
+  } catch (error) {
+    console.error('Error fetching session:', error);
+    return null;
+  }
+}
+
+// Listen to auth state changes
+export function onAuthStateChange(callback: (user: any) => void) {
+  return supabase.auth.onAuthStateChange((_event, session) => {
+    callback(session?.user || null);
+  });
 }

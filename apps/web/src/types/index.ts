@@ -49,3 +49,28 @@ export interface ApiGraphResponse {
   data: GraphData;
   error?: string;
 }
+
+export interface DashboardStats {
+  total_scans: number;
+  risk_alerts: number;
+  malicious_urls: number;
+  safe_browsing: number;
+  risk_distribution?: {
+    HIGH: number;
+    MEDIUM: number;
+    LOW: number;
+  };
+  trend?: {
+    total_scans_change: number;
+    risk_alerts_change: number;
+    malicious_urls_change: number;
+    safe_browsing_change: number;
+  };
+}
+
+export interface ScanHistoryResponse {
+  scans: ScanResult[];
+  total: number;
+  page?: number;
+  limit?: number;
+}

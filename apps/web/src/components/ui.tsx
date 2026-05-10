@@ -15,7 +15,7 @@ export function GlassCard({ children, className = '', hover = true }: CardProps)
       whileHover={hover ? { y: -4 } : {}}
       className={`
         bg-zinc-900/40 backdrop-blur-xl border border-zinc-700/50
-        rounded-xl p-6 transition-all duration-300
+        rounded-lg md:rounded-xl p-4 md:p-6 transition-all duration-300
         ${hover ? 'hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10' : ''}
         ${className}
       `}
