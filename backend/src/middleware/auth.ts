@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyToken, User } from '../services/supabase.js';
+import { verifyToken } from '../services/supabase.js';
+import type { User } from '../services/supabase.js';
 
 export interface AuthRequest extends Request {
   user?: User;
@@ -14,7 +15,7 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
 
   const token = authHeader.slice(7);
 
-  // Verify token with Supabase
+  // Synchronous check - verify token with Supabase
   verifyToken(token)
     .then(user => {
       if (!user) {

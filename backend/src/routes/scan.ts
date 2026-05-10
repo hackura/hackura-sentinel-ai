@@ -1,8 +1,13 @@
-import { Router, Request, Response } from 'express';
+// Augment Express Request type to include user (global augmentation)
+import 'express';
+import { Router, Response } from 'express';
+import type { Request } from 'express';
 import { analyzeThreat } from '../services/ollama.js';
 import { createScan, getScanById } from '../services/supabase.js';
 import { z } from 'zod';
-import { AuthRequest } from '../middleware/auth.js';
+import { authMiddleware } from '../middleware/auth.js';
+
+// Express Request augmentation is in middleware/auth.ts via global declaration
 
 const router = Router();
 
@@ -12,25 +17,16 @@ const scanSchema = z.object({
   type: z.enum(['url', 'domain', 'text']),
 });
 
-export interface ScanRequestBody {
-  input: string;
-  type: 'url' | 'domain' | 'text';
-}
-
 // POST /scan — Perform threat analysis
-router.post('/', async (req: Request<{}, {}, ScanRequestBody>, res: Response) => {
+router.post('/', authMiddleware, async (req: Request, res: Response) => {
   try {
-    // Validate input
     const parsed = scanSchema.parse(req.body);
     const { input, type } = parsed;
 
-    // Call Ollama AI
     const analysis = await analyzeThreat(input, type);
 
-    // Store in Supabase (user_id is added by auth middleware)
-    // Note: in production, req.user is set by authMiddleware
     const scanRecord = await createScan({
-      user_id: req.user?.id || 'anonymous',
+      user_id: req.user!.id,
       input,
       type,
       risk_score: analysis.risk_score,
@@ -50,15 +46,11 @@ router.post('/', async (req: Request<{}, {}, ScanRequestBody>, res: Response) =>
   }
 });
 
-// GET /scans/:id — Get single scan
-router.get('/:id', async (req: Request<{ id: string }>, res: Response) => {
+// GET /scan/:id — Get single scan
+router.get('/:id', authMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const userId = req.user?.id;
-
-    if (!userId) {
-      return res.status(401).json({ success: false, error: 'Unauthorized' });
-    }
+    const userId = req.user!.id;
 
     const scan = await getScanById(id, userId);
     return res.json({ success: true, data: scan });

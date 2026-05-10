@@ -28,8 +28,16 @@ cd hackura-sentinel-ai/backend
 
 ## Step 3: Install Dependencies
 
+> Install backend runtime deps (and ensure peer deps required by neo4j/pino are present).
+
 ```bash
-npm ci --production
+npm ci --omit=dev
+```
+
+If you run into an npm lockfile mismatch on the server, use:
+
+```bash
+npm install --omit=dev
 ```
 
 ---
@@ -117,7 +125,79 @@ After=network-online.target
 [Service]
 Environment="OLLAMA_ORIGINS=https://sentinel.hackura.app"
 ExecStart=/usr/bin/ollama serve
-User=YOUR_USER
+User=root
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable ollama
+sudo systemctl start ollama
+```
+
+---
+
+## Step 9: Set Up Neo4j (Required for Graph Explorer)
+
+Your graph endpoint requires Neo4j. Use **Neo4j AuraDB** (free cloud tier):
+
+1. Go to https://neo4j.com/cloud/aura/
+2. Sign up / log in
+3. Create a **Free instance**
+4. Wait for provisioning (~2 minutes)
+5. Click on your instance → **"Connect"** → **"Connection URL"**
+   - Copy the URI: `neo4j+s://<instance>.databases.neo4j.io`
+6. Click **"Generate password"** → copy it
+7. In Neo4j Browser, run this to create constraints & sample data:
+
+```cypher
+// Constraints
+CREATE CONSTRAINT threat_node_id IF NOT EXISTS FOR (n:Threat) REQUIRE n.id IS UNIQUE;
+CREATE CONSTRAINT domain_name IF NOT EXISTS FOR (d:Domain) REQUIRE d.name IS UNIQUE;
+
+// Sample threat data (optional — populate with your own)
+CREATE (c:Campaign {id: 'campaign-001', name: 'Campaign-2024', risk_level: 'HIGH'});
+CREATE (d:Domain {id: 'domain-001', name: 'phishing.com', risk_level: 'HIGH'});
+CREATE (i:IP {id: 'ip-001', name: '192.168.1.1', risk_level: 'HIGH'});
+CREATE (m:Malware {id: 'malware-001', name: 'Emotet', risk_level: 'HIGH'});
+
+CREATE (d)-[:HOSTED_ON]->(i);
+CREATE (i)-[:PART_OF]->(c);
+CREATE (c)-[:DISTRIBUTES]->(m);
+```
+
+8. Add these to your `backend/.env`:
+
+```env
+NEO4J_URI=neo4j+s://<instance>.databases.neo4j.io
+NEO4J_USERNAME=neo4j
+NEO4J_PASSWORD=<password-from-step-6>
+```
+
+---
+
+## Step 10: Configure Firewall (if enabled)
+
+```bash
+# Install Ollama
+curl -fsSL https://ollama.ai/install.sh | sh
+
+# Pull model
+ollama pull mistral
+
+# Create systemd service (optional, run as daemon)
+sudo tee /etc/systemd/system/ollama.service > /dev/null <<'EOF'
+[Unit]
+Description=Ollama Service
+After=network-online.target
+
+[Service]
+Environment="OLLAMA_ORIGINS=https://sentinel.hackura.app"
+ExecStart=/usr/bin/ollama serve
+User=root
 Restart=always
 RestartSec=10
 

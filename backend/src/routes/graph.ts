@@ -1,11 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { generateThreatGraph } from '../services/ollama.js';
-import { AuthRequest } from '../middleware/auth.js';
+import { authMiddleware } from '../middleware/auth.js';
 
 const router = Router();
 
 // GET /graph/:entity — Get threat graph
-router.get('/:entity', async (req: AuthRequest<{ entity: string }>, res: Response) => {
+router.get('/:entity', authMiddleware, async (req: Request, res: Response) => {
   try {
     const { entity } = req.params;
 
@@ -13,9 +13,7 @@ router.get('/:entity', async (req: AuthRequest<{ entity: string }>, res: Respons
       return res.status(400).json({ success: false, error: 'Entity parameter required' });
     }
 
-    // Generate graph via Ollama (future: query Neo4j first, fallback to AI)
-    const graphData = await generateThreatGraph(entity);
-
+    const graphData = await generateThreatGraph(entity as string);
     return res.json({ success: true, data: graphData });
   } catch (error: any) {
     console.error('Graph error:', error);

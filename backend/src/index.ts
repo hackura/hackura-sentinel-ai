@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 
 // Routes
@@ -11,7 +10,7 @@ import graphRouter from './routes/graph.js';
 import statsRouter from './routes/stats.js';
 
 // Load env
-dotenv.load({ override: true } as any);
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,14 +22,6 @@ app.use(cors({
   credentials: true,
 }));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: { success: false, error: 'Too many requests' },
-});
-app.use('/api/', limiter);
-
 // Body parser
 app.use(express.json());
 
@@ -39,11 +30,11 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// API routes — scan routes include auth middleware
-app.use('/scan', scanRouter); // POST /scan, GET /scan/:id
-app.use('/scans', scansRouter); // GET /scans
-app.use('/graph', graphRouter); // GET /graph/:entity
-app.use('/dashboard', statsRouter); // GET /dashboard/stats
+// API routes — auth middleware applied per-route
+app.use('/scan', scanRouter);
+app.use('/scans', scansRouter);
+app.use('/graph', graphRouter);
+app.use('/dashboard', statsRouter);
 
 // Error handler
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/nodejs';
+import { createClient, type User } from '@supabase/supabase-js';
 import { logger } from '../config/logger.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -17,5 +17,5 @@ const supabase = createClient(SUPABASE_URL || '', SUPABASE_SERVICE_ROLE_KEY || '
   },
 });
 
-export { supabase };
+export { supabase, type User };
 export default supabase;

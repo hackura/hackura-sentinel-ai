@@ -1,4 +1,60 @@
-# 🛡️ Backend Deployment Instructions — api.hackura.app
+# 🛡️ Hackura Sentinel AI — Backend API
+
+Production-ready Node.js + Express backend for threat intelligence. Provides AI-powered scanning via Ollama and stores results in Supabase. Threat graphs are queried from **Neo4j** first, with Ollama fallback.
+
+---
+
+## 📡 Endpoints
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| `GET` | `/health` | ❌ | Health check |
+| `POST` | `/scan` | ✅ | Perform threat analysis |
+| `GET` | `/scans` | ✅ | List user's scans (query: `?limit=`) |
+| `GET` | `/scan/:id` | ✅ | Get single scan |
+| `GET` | `/graph/:entity` | ✅ | Get threat graph (Neo4j → Ollama fallback) |
+| `GET` | `/dashboard/stats` | ✅ | Aggregated dashboard stats |
+
+All protected routes require `Authorization: Bearer <supabase-access-token>`.
+
+---
+
+## 🗄️ Database Schema (Supabase)
+
+```sql
+-- Scans table
+create table if not exists scans (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users not null,
+  input text not null,
+  type text check (type in ('url', 'domain', 'text')),
+  risk_score integer not null,
+  risk_level text check (risk_level in ('LOW', 'MEDIUM', 'HIGH')) not null,
+  confidence_score float not null,
+  ai_explanation text not null,
+  risk_signals jsonb default '[]',
+  created_at timestamp with time zone default now()
+);
+
+create index idx_scans_user_id on scans(user_id);
+create index idx_scans_created_at on scans(created_at desc);
+
+-- Optional: RPC for fast stats
+create or replace function get_dashboard_stats(user_id uuid)
+returns jsonb as $$
+  select jsonb_build_object(
+    'total_scans', count(*),
+    'risk_alerts', count(*) filter (where risk_level = 'HIGH'),
+    'malicious_urls', count(*) filter (where risk_level in ('HIGH', 'MEDIUM')),
+    'safe_browsing', count(*) filter (where risk_level = 'LOW'),
+    'risk_distribution', jsonb_build_object(
+      'HIGH', count(*) filter (where risk_level = 'HIGH'),
+      'MEDIUM', count(*) filter (where risk_level = 'MEDIUM'),
+      'LOW', count(*) filter (where risk_level = 'LOW')
+    )
+  ) from scans where user_id = $1;
+$$ language sql stable;
+```
 
 ## 1. Quick Start on Your Server
 

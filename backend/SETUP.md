@@ -2,7 +2,7 @@
 npm init -y
 npm install express cors helmet express-rate-limit axios
 npm install @supabase/supabase-js zod dotenv
-npm install --save-dev typescript @types/node @types/express @types/cors tsx
+npm install --save-dev typescript @types/node @types/cors tsx
 
 # Environment
 cp .env.example .env
