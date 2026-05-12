@@ -65,7 +65,7 @@ Provide your response ONLY as valid JSON (no markdown, no code blocks) with this
 }`;
 
 /**
- * Generate threat analysis using Ollama AI
+ * Generate threat analysis by calling our backend service
  */
 export async function analyzeThreat(input: string, type: 'url' | 'domain' | 'text'): Promise<{
   risk_score: number;
@@ -76,38 +76,22 @@ export async function analyzeThreat(input: string, type: 'url' | 'domain' | 'tex
   recommendations: string[];
 }> {
   try {
-    const prompt = THREAT_ANALYSIS_PROMPT
-      .replace('{input}', input)
-      .replace('{type}', type);
-
-    console.log('🤖 Calling Ollama AI for threat analysis...');
-    const response = await aiClient.post('/api/generate', {
-      model: OLLAMA_MODEL,
-      prompt: prompt,
-      stream: false,
-      temperature: 0.7,
+    console.log('🤖 Calling backend for threat analysis...');
+    const response = await aiClient.post('/scan', {
+      input: input,
+      type: type,
     });
 
-    // Parse the AI response
-    const aiResponse = response.data.response || '';
-    console.log('🤖 AI Response:', aiResponse);
+    // The backend now returns the full scan record
+    const scanRecord = response.data.data;
+    console.log('🤖 Backend Response:', scanRecord);
 
-    // Extract JSON from response
-    const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('Invalid AI response format');
+    if (!scanRecord) {
+      throw new Error('Invalid backend response');
     }
 
-    const threatData = JSON.parse(jsonMatch[0]);
-
-    return {
-      risk_score: Math.min(100, Math.max(0, threatData.risk_score || 50)),
-      risk_level: threatData.risk_level || 'MEDIUM',
-      confidence_score: Math.min(100, Math.max(0, threatData.confidence_score || 75)),
-      ai_explanation: threatData.ai_explanation || 'Analysis in progress...',
-      risk_signals: Array.isArray(threatData.risk_signals) ? threatData.risk_signals : [],
-      recommendations: Array.isArray(threatData.recommendations) ? threatData.recommendations : [],
-    };
+    // The backend doesn't provide recommendations, so we add a placeholder.
+    return { ...scanRecord, recommendations: [] };
   } catch (error) {
     console.error('❌ AI Service Error:', error);
     throw new Error(`Failed to analyze threat: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -115,7 +99,7 @@ export async function analyzeThreat(input: string, type: 'url' | 'domain' | 'tex
 }
 
 /**
- * Generate threat graph using Ollama AI
+ * Generate threat graph by calling our backend service
  */
 export async function generateThreatGraph(entity: string): Promise<{
   nodes: Array<{
@@ -138,40 +122,31 @@ export async function generateThreatGraph(entity: string): Promise<{
   };
 }> {
   try {
-    const prompt = GRAPH_ANALYSIS_PROMPT.replace('{entity}', entity);
-
-    console.log('🤖 Calling Ollama AI for threat graph generation...');
-    const response = await aiClient.post('/api/generate', {
-      model: OLLAMA_MODEL,
-      prompt: prompt,
-      stream: false,
-      temperature: 0.7,
+    console.log('🤖 Calling backend for threat graph generation...');
+    const response = await aiClient.post('/graph', {
+      entity: entity,
     });
 
-    const aiResponse = response.data.response || '';
-    console.log('🤖 AI Graph Response:', aiResponse);
+    const graphData = response.data.data;
+    console.log('🤖 AI Graph Response:', graphData);
 
-    // Extract JSON from response
-    const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
+    if (!graphData) {
       throw new Error('Invalid AI response format');
     }
 
-    const graphData = JSON.parse(jsonMatch[0]);
-
     // Transform AI response to graph format
-    const nodes = (graphData.related_entities || []).map((entity: any) => ({
-      id: entity.id || entity.label.toLowerCase().replace(/\s+/g, '_'),
-      label: entity.label,
-      type: entity.type || 'threat',
-      risk_level: entity.risk_level || 'MEDIUM',
-      description: entity.description || '',
+    const nodes = (graphData.nodes || []).map((node: any) => ({
+      id: node.id || node.label.toLowerCase().replace(/\s+/g, '_'),
+      label: node.label,
+      type: node.type || 'threat',
+      risk_level: node.risk_level || 'MEDIUM',
+      description: node.description || '',
     }));
 
-    const edges = (graphData.relationships || []).map((rel: any, index: number) => ({
-      source: rel.source_id,
-      target: rel.target_id,
-      relationship: rel.type || 'related_to',
+    const edges = (graphData.edges || []).map((rel: any, index: number) => ({
+      source: rel.source,
+      target: rel.target,
+      relationship: rel.relationship || 'related_to',
       weight: 1,
     }));
 

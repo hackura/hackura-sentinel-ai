@@ -24,40 +24,23 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-// Dashboard stats
+// Dashboard stats (disabled: only Ollama scan/graph endpoints should be active)
 export async function getDashboardStats() {
-  try {
-    const response = await api.get('/dashboard/stats');
-    return response.data;
-  } catch (error) {
-    console.error('Failed to fetch dashboard stats:', error);
-    return getMockDashboardStats();
-  }
+  return getMockDashboardStats();
 }
 
-// Scan history
+// Scan history (disabled: only Ollama scan/graph endpoints should be active)
 export async function getScans(limit?: number) {
-  try {
-    const response = await api.get('/scans' + (limit ? `?limit=${limit}` : ''));
-    return response.data.data || response.data;
-  } catch (error) {
-    console.error('Failed to fetch scans:', error);
-    return getMockScans(limit);
-  }
+  return getMockScans(limit);
 }
 
-// Single scan by ID
+// Single scan by ID (disabled: only Ollama scan/graph endpoints should be active)
 export async function getScanById(id: string) {
-  try {
-    const response = await api.get(`/scans/${id}`);
-    return response.data.data || response.data;
-  } catch (error) {
-    console.error('Failed to fetch scan:', error);
-    return getMockScanById(id);
-  }
+  return getMockScanById(id);
 }
 
-// Perform scan
+
+// Perform scan (active)
 export async function performScan(input: string): Promise<ScanResult> {
   try {
     const response = await api.post('/scan', {
@@ -71,7 +54,7 @@ export async function performScan(input: string): Promise<ScanResult> {
   }
 }
 
-// Graph data
+// Graph data (active)
 export async function getGraphData(entity: string): Promise<GraphData> {
   try {
     const response = await api.get(`/graph/${encodeURIComponent(entity)}`);
@@ -81,6 +64,7 @@ export async function getGraphData(entity: string): Promise<GraphData> {
     return getMockGraphData(entity);
   }
 }
+
 
 // API Health Check
 export async function checkApiHealth(): Promise<boolean> {
@@ -111,8 +95,9 @@ function getMockDashboardStats() {
   };
 }
 
+
 function getMockScans(limit?: number) {
-  const scans = [
+  const scans: ScanResult[] = [
     { id: '1', url: 'https://secure-payment-update.com', risk_score: 87, risk_level: 'HIGH', ai_explanation: 'Domain impersonation detected.', risk_signals: ['Domain Spoofing', 'SSL Mismatch'], confidence_score: 0.94, created_at: new Date().toISOString() },
     { id: '2', url: 'https://github.com/torvalds/linux', risk_score: 8, risk_level: 'LOW', ai_explanation: 'Legitimate repository.', risk_signals: [], confidence_score: 0.99, created_at: new Date(Date.now() - 86400000).toISOString() },
     { id: '3', url: 'suspicious-crypto-airdrop.net', risk_score: 92, risk_level: 'HIGH', ai_explanation: 'Classic crypto scam.', risk_signals: ['Scam Pattern', 'Wallet Draining'], confidence_score: 0.97, created_at: new Date(Date.now() - 172800000).toISOString() },

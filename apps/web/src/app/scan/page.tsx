@@ -64,12 +64,12 @@ export default function ScanPage() {
           <GlassCard className="p-6 border border-zinc-800 rounded-xl">
             <h2 className="text-xl font-bold">Verdict</h2>
             <p className="text-red-400 mt-2">{result.risk_level || 'HIGH RISK'}</p>
-            <p className="text-4xl font-bold mt-2">{result.risk_score ?? result.score ?? 0}/100</p>
+            <p className="text-4xl font-bold mt-2">{result.risk_score ?? 0}/100</p>
           </GlassCard>
 
           <GlassCard className="p-6 border border-zinc-800 rounded-xl">
             <h2 className="font-bold mb-2">AI Explanation</h2>
-            <p className="text-zinc-400">{result.ai_explanation || result.explanation || 'No explanation available.'}</p>
+            <p className="text-zinc-400">{result.ai_explanation || 'No explanation available.'}</p>
           </GlassCard>
 
           <GlassCard className="p-6 border border-zinc-800 rounded-xl">

@@ -7,7 +7,6 @@ import { useSidebar } from '@/context/sidebar-context';
 import { useAuth } from '@/context/auth-context';
 import { signOut } from '@/lib/supabase';
 import type { User } from '@supabase/supabase-js';
-import type { User } from '@supabase/supabase-js';
 
 export function Sidebar() {
   const pathname = usePathname();
