@@ -12,7 +12,19 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Additional ignores for stability
+    "node_modules/**",
+    ".turbo/**",
+    ".vercel/**",
+    "dist/**",
   ]),
+  {
+    rules: {
+      // Relaxed rules for development
+      "@next/next/no-html-link-for-pages": "off",
+      "react/no-unescaped-entities": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

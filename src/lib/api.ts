@@ -1,13 +1,25 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { ScanResult, GraphData } from '@/types';
 import { getSession } from '@/lib/supabase';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.hackura.app';
+// Get API URL from environment with fallback
+const getApiBaseUrl = (): string => {
+  // In browser/client
+  if (typeof window !== 'undefined') {
+    return process.env.NEXT_PUBLIC_API_URL || 'https://api.hackura.app';
+  }
+  // Server-side
+  return process.env.NEXT_PUBLIC_API_URL || 'https://api.hackura.app';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 30000, // 30 second timeout
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
 });
 
@@ -19,10 +31,22 @@ api.interceptors.request.use(async (config) => {
       config.headers.Authorization = `Bearer ${session.access_token}`;
     }
   } catch (error) {
-    console.error('Failed to get session:', error);
+    console.warn('Failed to get session:', error);
   }
   return config;
 });
+
+// Response error interceptor for better error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      // Handle unauthorized - redirect to login if needed
+      console.warn('Unauthorized request');
+    }
+    return Promise.reject(error);
+  }
+);
 
 export async function getDashboardStats() {
   try {

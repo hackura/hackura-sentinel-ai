@@ -1,0 +1,61 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Dependencies
+node_modules
+/.pnp
+.pnp.js
+
+# Testing
+.nyc_output
+.nycrc
+
+# Build outputs
+dist
+build
+.next
+out
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+.sublime-*
+
+# Documentation
+*.md
+docs/
+
+# Development
+.env.example
+tsconfig.tsbuildinfo
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.circleci
+
+# Package managers
+.pnpm-store
+.yarn
+.npm
+
+# Other
+.cache
+.sixth
