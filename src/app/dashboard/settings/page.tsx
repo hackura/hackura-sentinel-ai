@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { GlassCard, Button } from '@/components/ui';
 import { signOut } from '@/lib/supabase';
-import { generateApiKey, getUserSettings, updateUserSettings, type UserSettings } from '@/lib/api';
+import { getUserSettings, updateUserSettings, deleteAccount, type UserSettings } from '@/lib/api';
 
 export default function SettingsPage() {
   const [user, setUser] = useState<UserSettings>({
@@ -16,10 +16,8 @@ export default function SettingsPage() {
     api_key_created_at: null,
   });
   const [notificationEnabled, setNotificationEnabled] = useState(true);
-  const [generatedKey, setGeneratedKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [generatingKey, setGeneratingKey] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -44,67 +42,35 @@ export default function SettingsPage() {
       setStatusMessage(null);
       const updated = await updateUserSettings({
         name: user.name,
+        email: user.email,
         email_notifications: notificationEnabled,
-        two_factor_enabled: user.two_factor_enabled,
       });
       setUser(updated);
       setNotificationEnabled(updated.email_notifications);
-      setStatusMessage('Settings saved successfully.');
+      setStatusMessage('Settings saved successfully. Note: If you changed your email, please check your inbox for a confirmation link.');
     } catch (error) {
       console.error('Failed to save settings:', error);
-      setStatusMessage('Failed to save settings.');
+      setStatusMessage('Failed to save settings. Please try again.');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleGenerateApiKey = async () => {
-    try {
-      setGeneratingKey(true);
-      setStatusMessage(null);
-      const apiKey = await generateApiKey();
-      setGeneratedKey(apiKey.key);
-      setUser((current) => ({
-        ...current,
-        api_key_last4: apiKey.last4,
-        api_key_created_at: apiKey.created_at,
-      }));
-      setStatusMessage('New API key generated. Copy it now; it will not be shown again.');
-    } catch (error) {
-      console.error('Failed to generate API key:', error);
-      setStatusMessage('Failed to generate API key.');
-    } finally {
-      setGeneratingKey(false);
-    }
-  };
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm('Are you absolutely sure you want to delete your account? This action is permanent and cannot be undone.');
+    if (!confirmed) return;
 
-  const handleToggleTwoFactor = async () => {
     try {
       setSaving(true);
       setStatusMessage(null);
-      const updated = await updateUserSettings({
-        name: user.name,
-        email_notifications: notificationEnabled,
-        two_factor_enabled: !user.two_factor_enabled,
-      });
-      setUser(updated);
-      setNotificationEnabled(updated.email_notifications);
-      setStatusMessage(updated.two_factor_enabled ? 'Two-factor authentication enabled.' : 'Two-factor authentication disabled.');
+      await deleteAccount();
+      await signOut();
+      window.location.href = '/';
     } catch (error) {
-      console.error('Failed to toggle two-factor auth:', error);
-      setStatusMessage('Failed to update two-factor authentication.');
-    } finally {
+      console.error('Failed to delete account:', error);
+      setStatusMessage('Failed to delete account. Please contact support.');
       setSaving(false);
     }
-  };
-
-  const handleCopyApiKey = async () => {
-    if (!generatedKey) {
-      return;
-    }
-
-    await navigator.clipboard.writeText(generatedKey);
-    setStatusMessage('API key copied to clipboard.');
   };
 
   const handleLogout = async () => {
@@ -141,7 +107,16 @@ export default function SettingsPage() {
         transition={{ delay: 0.1 }}
       >
         <GlassCard>
-          <h3 className="text-lg font-semibold text-white mb-6">User Profile</h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-white">User Profile</h3>
+            <div className="w-12 h-12 rounded-full border border-zinc-700 overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
+              {user.avatar_url ? (
+                <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+              ) : (
+                user.name.charAt(0).toUpperCase()
+              )}
+            </div>
+          </div>
           <div className="space-y-4">
             <div>
               <label className="block text-sm text-zinc-400 mb-2">Name</label>
@@ -149,7 +124,7 @@ export default function SettingsPage() {
                 type="text"
                 value={user.name}
                 onChange={(e) => setUser({ ...user, name: e.target.value })}
-                disabled={loading}
+                disabled={loading || saving}
                 className="w-full bg-zinc-900/50 border border-zinc-700 rounded-lg px-4 py-2 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all"
               />
             </div>
@@ -158,9 +133,11 @@ export default function SettingsPage() {
               <input
                 type="email"
                 value={user.email}
-                readOnly
-                className="w-full bg-zinc-900/30 border border-zinc-700 rounded-lg px-4 py-2 text-zinc-400"
+                onChange={(e) => setUser({ ...user, email: e.target.value })}
+                disabled={loading || saving}
+                className="w-full bg-zinc-900/50 border border-zinc-700 rounded-lg px-4 py-2 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all"
               />
+              <p className="mt-2 text-xs text-zinc-500">Updating your email will require confirmation.</p>
             </div>
             <div className="pt-4">
               <Button variant="primary" onClick={handleSaveChanges} disabled={loading || saving}>
@@ -190,7 +167,7 @@ export default function SettingsPage() {
                   type="checkbox"
                   checked={notificationEnabled}
                   onChange={(e) => setNotificationEnabled(e.target.checked)}
-                  className="w-4 h-4"
+                  className="w-4 h-4 cursor-pointer"
                 />
               </label>
             </div>
@@ -202,54 +179,7 @@ export default function SettingsPage() {
               </div>
               <span className="text-purple-400">✓</span>
             </div>
-
-            <div className="flex items-center justify-between p-4 bg-zinc-800/50 rounded-lg border border-zinc-700/50">
-              <div>
-                <p className="text-white font-medium">Two-Factor Authentication</p>
-                <p className="text-zinc-400 text-sm">Enhanced security</p>
-              </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleToggleTwoFactor}
-                disabled={loading || saving}
-              >
-                {saving ? 'Updating...' : user.two_factor_enabled ? 'Enabled' : 'Enable'}
-              </Button>
-            </div>
           </div>
-        </GlassCard>
-      </motion.div>
-
-      {/* API Keys */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-        <GlassCard>
-          <h3 className="text-lg font-semibold text-white mb-6">API Keys</h3>
-          <div className="space-y-3">
-            <div className="p-4 bg-zinc-800/50 rounded-lg border border-zinc-700/50">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-white font-medium text-sm">Development Key</p>
-                <span className="text-xs text-zinc-500">
-                  {user.api_key_created_at ? `Created ${new Date(user.api_key_created_at).toLocaleDateString()}` : 'No key generated yet'}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 mb-3">
-                <code className="text-xs text-zinc-400 bg-black/50 px-3 py-2 rounded flex-1 font-mono">
-                  {generatedKey ? generatedKey : user.api_key_last4 ? `sk_live_••••••••${user.api_key_last4}` : 'No API key generated yet'}
-                </code>
-                <Button variant="secondary" size="sm" onClick={handleCopyApiKey} disabled={!generatedKey}>
-                  Copy
-                </Button>
-              </div>
-            </div>
-          </div>
-          <Button variant="secondary" className="mt-4" onClick={handleGenerateApiKey} disabled={generatingKey}>
-            {generatingKey ? 'Generating...' : '+ Generate New Key'}
-          </Button>
         </GlassCard>
       </motion.div>
 
@@ -257,24 +187,24 @@ export default function SettingsPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
+        transition={{ delay: 0.3 }}
       >
         <GlassCard>
-          <h3 className="text-lg font-semibold text-white mb-6">Danger Zone</h3>
+          <h3 className="text-lg font-semibold text-white mb-6 text-red-400">Danger Zone</h3>
           <div className="space-y-3">
-            <div className="p-4 bg-red-900/10 rounded-lg border border-red-700/50">
-              <p className="text-white font-medium mb-2">Logout</p>
-              <p className="text-zinc-400 text-sm mb-4">End your current session</p>
-              <Button variant="danger" onClick={handleLogout}>
+            <div className="p-4 bg-red-900/10 rounded-lg border border-red-900/20">
+              <p className="text-white font-medium mb-1">Logout</p>
+              <p className="text-zinc-400 text-sm mb-4">End your current session safely.</p>
+              <Button variant="secondary" onClick={handleLogout} className="border-red-900/30 hover:bg-red-900/20">
                 Logout
               </Button>
             </div>
 
-            <div className="p-4 bg-red-900/10 rounded-lg border border-red-700/50">
-              <p className="text-white font-medium mb-2">Delete Account</p>
-              <p className="text-zinc-400 text-sm mb-4">Permanently delete your account and all data</p>
-              <Button variant="danger" disabled>
-                Delete Account
+            <div className="p-4 bg-red-900/10 rounded-lg border border-red-900/20">
+              <p className="text-white font-medium mb-1">Delete Account</p>
+              <p className="text-zinc-400 text-sm mb-4">Permanently delete your account and all associated data.</p>
+              <Button variant="danger" onClick={handleDeleteAccount} disabled={loading || saving}>
+                {saving ? 'Deleting...' : 'Delete Account'}
               </Button>
             </div>
           </div>
@@ -285,7 +215,7 @@ export default function SettingsPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
+        transition={{ delay: 0.4 }}
       >
         <GlassCard>
           <h3 className="text-lg font-semibold text-white mb-4">System Information</h3>
@@ -296,7 +226,7 @@ export default function SettingsPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-zinc-400">Build Date</span>
-              <span className="text-white font-medium">May 10, 2026</span>
+              <span className="text-white font-medium">May 12, 2026</span>
             </div>
             <div className="flex justify-between">
               <span className="text-zinc-400">Environment</span>
@@ -304,7 +234,7 @@ export default function SettingsPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-zinc-400">Last Updated</span>
-              <span className="text-white font-medium">2 hours ago</span>
+              <span className="text-white font-medium">Recently</span>
             </div>
           </div>
         </GlassCard>

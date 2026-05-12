@@ -135,23 +135,30 @@ export function ScanInput({ onSubmit, loading = false, placeholder = 'Enter URL,
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-3">
+    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
       <input
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder={placeholder}
         disabled={loading}
-        className="flex-1 bg-zinc-900/50 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all disabled:opacity-50"
+        className="flex-1 bg-zinc-900/50 border border-zinc-700 rounded-xl px-4 py-4 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all disabled:opacity-50 text-base"
       />
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         type="submit"
         disabled={loading}
-        className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-lg font-medium transition-all disabled:opacity-50"
+        className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-xl font-bold transition-all disabled:opacity-50 shadow-lg shadow-purple-500/20 active:bg-purple-800"
       >
-        {loading ? 'Scanning...' : 'Scan'}
+        {loading ? (
+          <div className="flex items-center gap-2 justify-center">
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <span>Analyzing...</span>
+          </div>
+        ) : (
+          'Run Intelligence Scan'
+        )}
       </motion.button>
     </form>
   );

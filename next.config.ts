@@ -50,7 +50,7 @@ const nextConfig: NextConfig = {
       beforeFiles: [
         {
           source: '/api/:path*',
-          destination: `${process.env.NEXT_PUBLIC_API_URL || 'https://api.hackura.app'}/api/:path*`,
+          destination: `${process.env.NEXT_PUBLIC_API_URL || 'https://api.hackura.app'}/:path*`,
         },
       ],
     };

@@ -30,16 +30,6 @@ export async function signInWithEmail(email: string, password: string) {
   return supabase.auth.signInWithPassword({ email, password });
 }
 
-// Sign in with Google
-export async function signInWithGoogle() {
-  return supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`,
-    },
-  });
-}
-
 // Sign in with GitHub
 export async function signInWithGitHub() {
   return supabase.auth.signInWithOAuth({

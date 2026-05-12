@@ -7,6 +7,7 @@ import { useSidebar } from '@/context/sidebar-context';
 import { useAuth } from '@/context/auth-context';
 import { signOut } from '@/lib/supabase';
 import type { User } from '@supabase/supabase-js';
+import { BrandLogo } from '@/components/brand-logo';
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -15,9 +16,13 @@ export function Sidebar() {
 
   const getUserDisplay = () => {
     const email = user?.email || '';
-    const name = (user as User & { user_metadata?: { full_name?: string } })?.user_metadata?.full_name || email.split('@')[0];
-    return { name, email };
+    const metadata = (user as any)?.user_metadata || {};
+    const name = metadata.full_name || email.split('@')[0];
+    const avatar = metadata.avatar_url;
+    return { name, email, avatar };
   };
+
+  const { name, email, avatar } = getUserDisplay();
 
   const menuItems = [
     { label: 'Dashboard', icon: '📊', href: '/dashboard' },
@@ -38,15 +43,9 @@ export function Sidebar() {
       {/* Logo */}
       <div className="p-4 border-b border-zinc-800/50 flex items-center justify-between gap-2">
         {!collapsed && (
-          <div className="flex-1">
-            <h1 className="text-xl font-bold text-white flex items-center gap-2">
-              <span className="text-xl">🛡️</span>
-              <span>Hackura</span>
-            </h1>
-            <p className="text-xs text-purple-400 mt-1">Sentinel AI</p>
-          </div>
+          <BrandLogo size="md" className="flex-1" />
         )}
-        {collapsed && <span className="text-xl">🛡️</span>}
+        {collapsed && <BrandLogo size="sm" showText={false} />}
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
@@ -91,18 +90,26 @@ export function Sidebar() {
         <div className={`${collapsed ? 'p-2' : 'p-3'} border-t border-zinc-800/50`}>
           {collapsed ? (
             <div className="flex justify-center">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
-                {getUserDisplay().name.charAt(0).toUpperCase()}
+              <div className="w-10 h-10 rounded-full border border-zinc-700 overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
+                {avatar ? (
+                  <img src={avatar} alt={name} className="w-full h-full object-cover" />
+                ) : (
+                  name.charAt(0).toUpperCase()
+                )}
               </div>
             </div>
           ) : (
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                {getUserDisplay().name.charAt(0).toUpperCase()}
+              <div className="w-10 h-10 rounded-full border border-zinc-700 overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                {avatar ? (
+                  <img src={avatar} alt={name} className="w-full h-full object-cover" />
+                ) : (
+                  name.charAt(0).toUpperCase()
+                )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">{getUserDisplay().name}</p>
-                <p className="text-xs text-zinc-400 truncate">{user.email}</p>
+                <p className="text-sm font-medium text-white truncate">{name}</p>
+                <p className="text-xs text-zinc-400 truncate">{email}</p>
               </div>
             </div>
           )}
@@ -122,9 +129,10 @@ export function Sidebar() {
       <div className="p-4 border-t border-zinc-800/50">
         {!collapsed && (
           <>
-            <p className="text-xs text-zinc-500 text-center">
-              Hackura Sentinel AI v1.0
-            </p>
+            <div className="flex justify-center mb-2">
+              <BrandLogo size="sm" showText={false} />
+            </div>
+            <p className="text-xs text-zinc-500 text-center">Hackura Sentinel AI v1.0</p>
             <p className="text-xs text-zinc-600 text-center mt-1">
               AI-Powered Threat Intelligence
             </p>
