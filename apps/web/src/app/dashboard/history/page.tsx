@@ -164,7 +164,7 @@ export default function HistoryPage() {
                   <div>
                     <p className="text-zinc-400 text-xs mb-1">Confidence</p>
                     <p className="text-lg font-semibold text-purple-400">
-                      {Math.round(scan.confidence_score * 100)}%
+                      {Math.round(scan.confidence_score)}%
                     </p>
                   </div>
                   <div>

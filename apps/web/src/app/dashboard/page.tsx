@@ -39,14 +39,14 @@ export default function DashboardPage() {
       ]
     : stats
     ? [
-        { label: 'High Risk', value: stats.risk_alerts || 0, color: '#dc2626' },
-        { label: 'Medium Risk', value: Math.floor((stats.total_scans || 0) * 0.2), color: '#eab308' },
-        { label: 'Low Risk', value: stats.safe_browsing || 0, color: '#16a34a' },
+        { label: 'High Risk', value: stats.risk_distribution?.HIGH || stats.risk_alerts || 0, color: '#dc2626' },
+        { label: 'Medium Risk', value: stats.risk_distribution?.MEDIUM || 0, color: '#eab308' },
+        { label: 'Low Risk', value: stats.risk_distribution?.LOW || stats.safe_browsing || 0, color: '#16a34a' },
       ]
     : [
-        { label: 'High Risk', value: 12, color: '#dc2626' },
-        { label: 'Medium Risk', value: 28, color: '#eab308' },
-        { label: 'Low Risk', value: 156, color: '#16a34a' },
+        { label: 'High Risk', value: 0, color: '#dc2626' },
+        { label: 'Medium Risk', value: 0, color: '#eab308' },
+        { label: 'Low Risk', value: 0, color: '#16a34a' },
       ];
 
   const containerVariants = {
@@ -98,15 +98,15 @@ export default function DashboardPage() {
           <div className="space-y-4">
             <div>
               <p className="text-zinc-400 text-sm mb-1">Detection Accuracy</p>
-              <p className="text-2xl font-bold text-purple-400">{stats ? '98.7%' : '—'}</p>
+              <p className="text-2xl font-bold text-purple-400">{stats?.detection_accuracy ? `${stats.detection_accuracy}%` : '—'}</p>
             </div>
             <div>
               <p className="text-zinc-400 text-sm mb-1">Avg. Response Time</p>
-              <p className="text-2xl font-bold text-green-400">{stats ? '0.24s' : '—'}</p>
+              <p className="text-2xl font-bold text-green-400">{stats?.avg_response_time ? `${stats.avg_response_time}s` : '—'}</p>
             </div>
             <div>
               <p className="text-zinc-400 text-sm mb-1">Active Threats</p>
-              <p className="text-2xl font-bold text-red-400">{stats ? '12' : '—'}</p>
+              <p className="text-2xl font-bold text-red-400">{stats?.active_threats ?? '—'}</p>
             </div>
           </div>
         </GlassCard>

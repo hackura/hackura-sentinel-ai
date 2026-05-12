@@ -55,6 +55,9 @@ export interface DashboardStats {
   risk_alerts: number;
   malicious_urls: number;
   safe_browsing: number;
+  detection_accuracy?: number;
+  avg_response_time?: number;
+  active_threats?: number;
   risk_distribution?: {
     HIGH: number;
     MEDIUM: number;

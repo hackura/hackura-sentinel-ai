@@ -1,15 +1,111 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { GlassCard, Button } from '@/components/ui';
 import { signOut } from '@/lib/supabase';
+import { generateApiKey, getUserSettings, updateUserSettings, type UserSettings } from '@/lib/api';
 
 export default function SettingsPage() {
-  const [user, setUser] = useState({
-    email: 'user@example.com',
+  const [user, setUser] = useState<UserSettings>({
+    email: '',
     name: 'Security Analyst',
+    email_notifications: true,
+    two_factor_enabled: false,
+    api_key_last4: null,
+    api_key_created_at: null,
   });
+  const [notificationEnabled, setNotificationEnabled] = useState(true);
+  const [generatedKey, setGeneratedKey] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [generatingKey, setGeneratingKey] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const settings = await getUserSettings();
+        setUser(settings);
+        setNotificationEnabled(settings.email_notifications);
+      } catch (error) {
+        console.error('Failed to load settings:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadSettings();
+  }, []);
+
+  const handleSaveChanges = async () => {
+    try {
+      setSaving(true);
+      setStatusMessage(null);
+      const updated = await updateUserSettings({
+        name: user.name,
+        email_notifications: notificationEnabled,
+        two_factor_enabled: user.two_factor_enabled,
+      });
+      setUser(updated);
+      setNotificationEnabled(updated.email_notifications);
+      setStatusMessage('Settings saved successfully.');
+    } catch (error) {
+      console.error('Failed to save settings:', error);
+      setStatusMessage('Failed to save settings.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleGenerateApiKey = async () => {
+    try {
+      setGeneratingKey(true);
+      setStatusMessage(null);
+      const apiKey = await generateApiKey();
+      setGeneratedKey(apiKey.key);
+      setUser((current) => ({
+        ...current,
+        api_key_last4: apiKey.last4,
+        api_key_created_at: apiKey.created_at,
+      }));
+      setStatusMessage('New API key generated. Copy it now; it will not be shown again.');
+    } catch (error) {
+      console.error('Failed to generate API key:', error);
+      setStatusMessage('Failed to generate API key.');
+    } finally {
+      setGeneratingKey(false);
+    }
+  };
+
+  const handleToggleTwoFactor = async () => {
+    try {
+      setSaving(true);
+      setStatusMessage(null);
+      const updated = await updateUserSettings({
+        name: user.name,
+        email_notifications: notificationEnabled,
+        two_factor_enabled: !user.two_factor_enabled,
+      });
+      setUser(updated);
+      setNotificationEnabled(updated.email_notifications);
+      setStatusMessage(updated.two_factor_enabled ? 'Two-factor authentication enabled.' : 'Two-factor authentication disabled.');
+    } catch (error) {
+      console.error('Failed to toggle two-factor auth:', error);
+      setStatusMessage('Failed to update two-factor authentication.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCopyApiKey = async () => {
+    if (!generatedKey) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(generatedKey);
+    setStatusMessage('API key copied to clipboard.');
+  };
 
   const handleLogout = async () => {
     await signOut();
@@ -27,6 +123,17 @@ export default function SettingsPage() {
         <p className="text-sm md:text-base text-zinc-400">Manage your account and system settings</p>
       </motion.div>
 
+      {statusMessage && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <GlassCard>
+            <p className="text-sm text-zinc-200">{statusMessage}</p>
+          </GlassCard>
+        </motion.div>
+      )}
+
       {/* User Profile */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -42,6 +149,7 @@ export default function SettingsPage() {
                 type="text"
                 value={user.name}
                 onChange={(e) => setUser({ ...user, name: e.target.value })}
+                disabled={loading}
                 className="w-full bg-zinc-900/50 border border-zinc-700 rounded-lg px-4 py-2 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all"
               />
             </div>
@@ -50,12 +158,14 @@ export default function SettingsPage() {
               <input
                 type="email"
                 value={user.email}
-                onChange={(e) => setUser({ ...user, email: e.target.value })}
-                className="w-full bg-zinc-900/50 border border-zinc-700 rounded-lg px-4 py-2 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all"
+                readOnly
+                className="w-full bg-zinc-900/30 border border-zinc-700 rounded-lg px-4 py-2 text-zinc-400"
               />
             </div>
             <div className="pt-4">
-              <Button variant="primary">Save Changes</Button>
+              <Button variant="primary" onClick={handleSaveChanges} disabled={loading || saving}>
+                {saving ? 'Saving...' : 'Save Changes'}
+              </Button>
             </div>
           </div>
         </GlassCard>
@@ -76,7 +186,12 @@ export default function SettingsPage() {
                 <p className="text-zinc-400 text-sm">Receive alerts for high-risk threats</p>
               </div>
               <label className="flex items-center cursor-pointer">
-                <input type="checkbox" defaultChecked className="w-4 h-4" />
+                <input
+                  type="checkbox"
+                  checked={notificationEnabled}
+                  onChange={(e) => setNotificationEnabled(e.target.checked)}
+                  className="w-4 h-4"
+                />
               </label>
             </div>
 
@@ -93,7 +208,14 @@ export default function SettingsPage() {
                 <p className="text-white font-medium">Two-Factor Authentication</p>
                 <p className="text-zinc-400 text-sm">Enhanced security</p>
               </div>
-              <Button variant="secondary" size="sm">Enable</Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleToggleTwoFactor}
+                disabled={loading || saving}
+              >
+                {saving ? 'Updating...' : user.two_factor_enabled ? 'Enabled' : 'Enable'}
+              </Button>
             </div>
           </div>
         </GlassCard>
@@ -111,17 +233,23 @@ export default function SettingsPage() {
             <div className="p-4 bg-zinc-800/50 rounded-lg border border-zinc-700/50">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-white font-medium text-sm">Development Key</p>
-                <span className="text-xs text-zinc-500">Created 30 days ago</span>
+                <span className="text-xs text-zinc-500">
+                  {user.api_key_created_at ? `Created ${new Date(user.api_key_created_at).toLocaleDateString()}` : 'No key generated yet'}
+                </span>
               </div>
               <div className="flex items-center gap-2 mb-3">
                 <code className="text-xs text-zinc-400 bg-black/50 px-3 py-2 rounded flex-1 font-mono">
-                  sk_dev_••••••••••••••••••••
+                  {generatedKey ? generatedKey : user.api_key_last4 ? `sk_live_••••••••${user.api_key_last4}` : 'No API key generated yet'}
                 </code>
-                <Button variant="secondary" size="sm">Copy</Button>
+                <Button variant="secondary" size="sm" onClick={handleCopyApiKey} disabled={!generatedKey}>
+                  Copy
+                </Button>
               </div>
             </div>
           </div>
-          <Button variant="secondary" className="mt-4">+ Generate New Key</Button>
+          <Button variant="secondary" className="mt-4" onClick={handleGenerateApiKey} disabled={generatingKey}>
+            {generatingKey ? 'Generating...' : '+ Generate New Key'}
+          </Button>
         </GlassCard>
       </motion.div>
 
