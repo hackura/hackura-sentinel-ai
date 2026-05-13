@@ -123,7 +123,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {recentScans.map((scan, i) => (
               <motion.div key={scan.id} variants={itemVariants} transition={{ delay: i * 0.05 }}>
-                <ScanCard scan={scan} onClick={() => window.location.href = `/dashboard/history?id=${scan.id}`} />
+                <ScanCard scan={scan} href={`/dashboard/report/${scan.id}`} />
               </motion.div>
             ))}
           </div>

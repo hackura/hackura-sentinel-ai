@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import { GlassCard, LoadingSpinner } from '@/components/ui';
 import { ConfirmationModal } from '@/components/confirmation-modal';
 import { getScans, clearScans, deleteScan } from '@/lib/api';
@@ -200,6 +201,13 @@ export default function HistoryPage() {
                       <p className="text-zinc-500 text-[10px] font-mono mt-1">
                         {new Date(scan.created_at).toLocaleString()}
                       </p>
+                        <Link
+                          href={`/dashboard/report/${scan.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex mt-3 text-[10px] font-bold uppercase tracking-widest text-purple-400 hover:text-purple-300 transition-colors"
+                        >
+                          Open report →
+                        </Link>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="text-right">

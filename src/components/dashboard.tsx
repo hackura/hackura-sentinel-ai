@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { GlassCard, RiskBadge } from './ui';
 import { ScanResult } from '@/types';
 
@@ -31,17 +32,13 @@ export function OverviewCard({ title, value, icon, trend, className = '' }: Over
 
 interface ScanCardProps {
   scan: ScanResult;
+  href?: string;
   onClick?: () => void;
 }
 
-export function ScanCard({ scan, onClick }: ScanCardProps) {
-  return (
-    <motion.div
-      whileHover={{ y: -4 }}
-      onClick={onClick}
-      className="cursor-pointer"
-    >
-      <GlassCard className="hover:border-purple-500/50">
+export function ScanCard({ scan, href, onClick }: ScanCardProps) {
+  const content = (
+    <GlassCard className="hover:border-purple-500/50">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <p className="text-zinc-300 text-sm truncate">{scan.url}</p>
@@ -78,7 +75,22 @@ export function ScanCard({ scan, onClick }: ScanCardProps) {
             </div>
           </div>
         )}
-      </GlassCard>
+    </GlassCard>
+  );
+
+  if (href) {
+    return (
+      <motion.div whileHover={{ y: -4 }} className="cursor-pointer">
+        <Link href={href} className="block">
+          {content}
+        </Link>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div whileHover={{ y: -4 }} onClick={onClick} className="cursor-pointer">
+      {content}
     </motion.div>
   );
 }

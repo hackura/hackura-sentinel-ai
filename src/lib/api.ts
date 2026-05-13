@@ -82,7 +82,10 @@ api.interceptors.response.use(
       }
     } else {
       // Something happened in setting up the request that triggered an Error
-      console.error('[API Error: Setup/Config Issue]', error.message);
+      // Skip logging AbortError - it's expected when polling stops or component unmounts
+      if (error.code !== 'ERR_CANCELED' && error.message !== 'canceled') {
+        console.error('[API Error: Setup/Config Issue]', error.message);
+      }
     }
 
     return Promise.reject(error);

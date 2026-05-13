@@ -96,8 +96,8 @@ export function useLiveScanPolling({
       pollIntervalRef.current = nextInterval;
       pollTimeoutRef.current = setTimeout(pollScan, nextInterval);
     } catch (error: any) {
-      // Don't treat abort errors as real errors
-      if (error.name === 'AbortError') return;
+      // Don't treat abort errors as real errors (expected on cleanup/unmount)
+      if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') return;
 
       retryCountRef.current += 1;
 
