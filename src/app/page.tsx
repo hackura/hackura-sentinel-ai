@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/images/og-sentinel.png',
+        url: new URL('/logo.svg', siteUrl).toString(),
         width: 1200,
         height: 630,
         alt: 'Hackura Sentinel AI dashboard preview',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     title: 'Hackura Sentinel AI | AI-Powered Trust Intelligence',
     description:
       'Detect phishing, scams, malicious infrastructure, and misinformation with AI-powered trust intelligence and graph analysis.',
-    images: ['/images/og-sentinel.png'],
+    images: [new URL('/logo.svg', siteUrl).toString()],
   },
   robots: {
     index: true,

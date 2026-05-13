@@ -6,14 +6,16 @@ import { useAuth } from '@/context/auth-context';
 import { LoadingSpinner } from '@/components/ui';
 import { useOnboardingRedirect } from '@/hooks/useOnboardingRedirect';
 
+const ONBOARDING_PUBLIC_ROUTES = ['/onboarding', '/auth/callback', '/auth/login', '/auth/signup'];
+
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { isLoading, isSignedIn } = useAuth();
-  const { isChecking } = useOnboardingRedirect(['/onboarding', '/auth/callback', '/auth/login', '/auth/signup']);
+  const { isChecking } = useOnboardingRedirect(ONBOARDING_PUBLIC_ROUTES);
 
   useEffect(() => {
     if (!isLoading && !isSignedIn) {
-      router.push('/auth/login');
+      router.replace('/auth/login');
     }
   }, [isLoading, isSignedIn, router]);
 

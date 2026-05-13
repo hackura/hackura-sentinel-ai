@@ -28,6 +28,7 @@ export function useOnboardingRedirect(
     userProfile: null,
   });
   const checkedUserIdRef = useRef<string | null>(null);
+  const clearedForNoUserRef = useRef(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -38,7 +39,9 @@ export function useOnboardingRedirect(
       }
 
       if (!user) {
-        if (!isLoading) {
+        if (!isLoading && !clearedForNoUserRef.current) {
+          clearedForNoUserRef.current = true;
+          checkedUserIdRef.current = null;
           setState({
             needsOnboarding: false,
             isChecking: false,
@@ -58,6 +61,7 @@ export function useOnboardingRedirect(
         }
 
         if (isMounted) {
+          clearedForNoUserRef.current = false;
           checkedUserIdRef.current = user.id;
           const needsOnboarding = !profile?.onboarding_completed;
 
@@ -78,6 +82,7 @@ export function useOnboardingRedirect(
       } catch (error) {
         console.error('Error checking onboarding status:', error);
         if (isMounted) {
+          clearedForNoUserRef.current = false;
           checkedUserIdRef.current = user?.id ?? null;
           setState({
             needsOnboarding: false,
