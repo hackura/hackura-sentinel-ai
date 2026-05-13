@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import { ScanInput } from '@/components/dashboard';
 import { GlassCard, RiskBadge, LoadingSpinner, Button } from '@/components/ui';
 import { performScan } from '@/lib/api';
@@ -28,9 +29,11 @@ export default function ScanPage() {
   }, [loading]);
 
   const loadingMessages = [
-    'Establishing secure connection...',
+    'Connecting to threat engine...',
     'Analyzing threat patterns with AI...',
+    'Waiting for intelligence providers...',
     'Correlating external intelligence...',
+    'Threat analysis in progress...',
     'Finalizing security score...',
   ];
 
@@ -63,6 +66,22 @@ export default function ScanPage() {
 
   return (
     <div className="space-y-6 md:space-y-8 pb-10">
+      {/* Page Navbar / Breadcrumbs */}
+      <nav className="flex items-center justify-between mb-4 px-1">
+        <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-zinc-500">
+          <Link href="/dashboard" className="hover:text-purple-400 transition-colors">Dashboard</Link>
+          <span className="opacity-30">/</span>
+          <span className="text-zinc-300">Threat Scanner</span>
+        </div>
+        <Link 
+          href="/" 
+          className="text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white transition-colors flex items-center gap-2 group"
+        >
+          <span className="group-hover:-translate-x-1 transition-transform inline-block">←</span>
+          Public Home
+        </Link>
+      </nav>
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

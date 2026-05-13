@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { GraphVisualizer } from '@/components/graph';
-import { GlassCard, Button, LoadingSpinner } from '@/components/ui';
+import { GlassCard, Button } from '@/components/ui';
 import { getGraphData } from '@/lib/api';
 import { GraphData } from '@/types';
 
@@ -24,60 +24,88 @@ export default function GraphExplorerPage() {
     try {
       const data = await getGraphData(query);
       setGraphData(data);
-    } catch (err: unknown) {
-      const axiosError = err as { response?: { data?: { error?: string } }; message?: string };
-      setError(axiosError.response?.data?.error || axiosError.message || 'Failed to load graph');
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message || 'Threat engine connection failed');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="space-y-6 md:space-y-8">
+    <div className="space-y-6 md:space-y-8 pb-10">
+      {/* Header Section */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Graph Explorer</h1>
-        <p className="text-sm md:text-base text-zinc-400">Visualize threat relationships in the network graph</p>
-      </motion.div>
-
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-        <GlassCard>
-          <h3 className="text-lg font-semibold text-white mb-4">Search Entity</h3>
-          <div className="flex gap-3">
-            <input
-              type="text"
-              placeholder="Enter domain, IP, or campaign..."
-              value={selectedEntity}
-              onChange={(e) => setSelectedEntity(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleLoadGraph()}
-              className="flex-1 bg-zinc-900/50 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all"
-            />
-            <Button variant="primary" onClick={() => handleLoadGraph()} loading={loading}>
-              Explore
-            </Button>
-          </div>
-          {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
-        </GlassCard>
-      </motion.div>
-
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-        {loading ? (
-          <GlassCard className="h-96 flex items-center justify-center">
-            <div className="text-center">
-              <LoadingSpinner size="lg" />
-              <p className="text-zinc-400 mt-4">Building threat graph...</p>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-black text-white mb-2 tracking-tighter uppercase italic">
+              Graph <span className="text-purple-500">Intelligence</span>
+            </h1>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+              <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.3em]">
+                SOC Level 3 Infrastructure Analysis
+              </p>
             </div>
-          </GlassCard>
-        ) : graphData ? (
-          <GraphVisualizer data={graphData} />
+          </div>
+          <div className="flex gap-2">
+            <div className="relative group min-w-[300px]">
+              <input
+                type="text"
+                placeholder="Target Domain, IP, or Malware Hash..."
+                value={selectedEntity}
+                onChange={(e) => setSelectedEntity(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleLoadGraph()}
+                className="w-full bg-zinc-950/80 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all font-mono"
+              />
+              <button 
+                onClick={() => handleLoadGraph()}
+                disabled={loading}
+                className="absolute right-2 top-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-bold uppercase tracking-widest rounded transition-all disabled:opacity-50"
+              >
+                {loading ? 'Analyzing...' : 'Execute'}
+              </button>
+            </div>
+          </div>
+        </div>
+        {error && (
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 text-[10px] font-mono mt-2 uppercase">
+            [!] Error: {error}
+          </motion.p>
+        )}
+      </motion.div>
+
+      {/* Main Visualization Area */}
+      <div>
+        {graphData || loading ? (
+          <GraphVisualizer data={graphData || { nodes: [], edges: [] }} loading={loading} />
         ) : (
-          <GlassCard className="h-96 flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-2xl mb-2">🕸️</p>
-              <p className="text-zinc-400">Search for an entity to visualize its threat graph</p>
+          <GlassCard className="h-[600px] flex items-center justify-center border-dashed border-zinc-800">
+            <div className="text-center group">
+              <div className="text-6xl mb-6 opacity-20 group-hover:opacity-40 transition-opacity">🕸️</div>
+              <h3 className="text-zinc-500 font-mono text-xs uppercase tracking-[0.5em] mb-4">Initialize Intelligence Scan</h3>
+              <p className="text-zinc-600 text-[10px] max-w-xs mx-auto leading-relaxed uppercase tracking-widest">
+                Enter a network entity in the command bar to map relationships and detect malicious infrastructure patterns.
+              </p>
             </div>
           </GlassCard>
         )}
-      </motion.div>
+      </div>
+
+      {/* Footer System Specs */}
+      <div className="flex flex-wrap gap-6 mt-4 opacity-30">
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] font-mono text-zinc-500 uppercase">Engine:</span>
+          <span className="text-[9px] font-mono text-purple-400 uppercase">H-Sent-v1-Force</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] font-mono text-zinc-500 uppercase">Latency:</span>
+          <span className="text-[9px] font-mono text-green-400 uppercase">24ms</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] font-mono text-zinc-500 uppercase">Nodes:</span>
+          <span className="text-[9px] font-mono text-white uppercase">{graphData?.nodes.length || 0}</span>
+        </div>
+      </div>
     </div>
   );
 }

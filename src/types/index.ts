@@ -16,25 +16,65 @@ export interface ScanResult {
   confidence_score: number;
   created_at: string;
   metadata?: Record<string, any>;
+  graph_data?: GraphData;
+  intel?: IntelData;
 }
 
 // Graph Data
+export type NodeType = 
+  | 'domain' 
+  | 'ip' 
+  | 'url' 
+  | 'asn' 
+  | 'certificate' 
+  | 'malware' 
+  | 'campaign' 
+  | 'technology' 
+  | 'subdomain' 
+  | 'organization' 
+  | 'email' 
+  | 'hash';
+
 export interface GraphNode {
   id: string;
   label: string;
-  type: 'domain' | 'ip' | 'campaign' | 'malware';
-  risk_level?: 'LOW' | 'MEDIUM' | 'HIGH';
+  type: NodeType;
+  risk_level?: 'LOW' | 'MEDIUM' | 'HIGH' | 'SAFE' | 'UNKNOWN' | 'INFRA';
+  metadata?: {
+    reputation?: number;
+    geoip?: string;
+    asn?: string;
+    threat_score?: number;
+    tags?: string[];
+    malware_associations?: string[];
+    abuse_reports?: number;
+    vt_detections?: number;
+    linked_entities?: number;
+    [key: string]: any;
+  };
 }
 
 export interface GraphEdge {
   source: string;
   target: string;
-  relationship: string;
+  relationship: 'RESOLVES_TO' | 'HOSTED_BY' | 'USES_SSL' | 'RELATED_TO' | 'SEEN_IN' | 'COMMUNICATES_WITH' | 'REDIRECTS_TO' | string;
 }
 
 export interface GraphData {
   nodes: GraphNode[];
   edges: GraphEdge[];
+}
+
+export interface IntelData {
+  summary: string;
+  threat_score: number;
+  timeline?: Array<{
+    date: string;
+    event: string;
+    type: string;
+    details: string;
+  }>;
+  [key: string]: any;
 }
 
 // API Response Types

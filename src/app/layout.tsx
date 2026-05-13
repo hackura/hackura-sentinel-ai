@@ -14,6 +14,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased">
+      <head>
+        {/* Preconnect to the backend API to reduce latency during initial scans */}
+        <link rel="preconnect" href="https://api.hackura.app" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://api.hackura.app" />
+      </head>
       <body className="min-h-full bg-black text-white">
         <AuthProvider>{children}</AuthProvider>
       </body>

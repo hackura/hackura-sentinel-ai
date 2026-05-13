@@ -65,21 +65,21 @@ export default function Home() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="max-w-4xl mx-auto bg-zinc-900/40 backdrop-blur-xl border border-zinc-700/50 rounded-2xl p-12"
+          className="max-w-4xl mx-auto bg-zinc-900/40 backdrop-blur-xl border border-zinc-700/50 rounded-2xl p-6 md:p-12"
         >
-          <div className="bg-zinc-950/50 rounded-lg p-8 border border-zinc-800/50">
+          <div className="bg-zinc-950/50 rounded-lg p-6 md:p-8 border border-zinc-800/50">
             <div className="space-y-4 text-left">
               <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
-                <code className="text-sm text-zinc-400">Risk Assessment Engine</code>
+                <div className="w-3 h-3 rounded-full bg-red-500/50 flex-shrink-0"></div>
+                <code className="text-xs md:text-sm text-zinc-400">Risk Assessment Engine</code>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-purple-500/50"></div>
-                <code className="text-sm text-zinc-400">Graph Database Analysis</code>
+                <div className="w-3 h-3 rounded-full bg-purple-500/50 flex-shrink-0"></div>
+                <code className="text-xs md:text-sm text-zinc-400">Graph Database Analysis</code>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
-                <code className="text-sm text-zinc-400">Real-time Threat Intelligence</code>
+                <div className="w-3 h-3 rounded-full bg-green-500/50 flex-shrink-0"></div>
+                <code className="text-xs md:text-sm text-zinc-400">Real-time Threat Intelligence</code>
               </div>
             </div>
           </div>
@@ -87,9 +87,9 @@ export default function Home() {
       </section>
 
       {/* Features */}
-      <section id="features" className="px-8 py-20 max-w-6xl mx-auto">
-        <h3 className="text-4xl font-bold text-center mb-12 bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">Core Features</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <section id="features" className="px-6 py-20 max-w-6xl mx-auto">
+        <h3 className="text-3xl md:text-4xl font-bold text-center mb-12 bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">Core Features</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {[
             { icon: '🔍', title: 'URL Scanning', desc: 'Analyze URLs, domains, and text for threats' },
             { icon: '🕸️', title: 'Graph Explorer', desc: 'Visualize relationships in threat networks' },

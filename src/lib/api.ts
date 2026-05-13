@@ -1,31 +1,30 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { ScanResult, GraphData } from '@/types';
-import { getSession } from '@/lib/supabase';
+import { getSession, supabase } from '@/lib/supabase';
 
 /**
- * Hackura Sentinel AI - API Client
- * Senior Full-Stack Implementation
+ * Hackura Sentinel AI - High-Resilience API Client
+ * Senior Full-Stack Implementation with Network Diagnostics
  */
 
 const getApiBaseUrl = (): string => {
-  if (typeof window !== 'undefined') {
-    return process.env.NEXT_PUBLIC_API_URL || 'https://api.hackura.app';
-  }
-  return process.env.NEXT_PUBLIC_API_URL || 'https://api.hackura.app';
+  // STRICT REQUIREMENT: Use direct production URL
+  return 'https://api.hackura.app';
 };
 
 const API_BASE_URL = getApiBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 60000, // 60 second timeout for long-running AI scans
+  timeout: 300000, // 300 second (5 min) timeout for deep AI/external API scans
+  withCredentials: false, // Ensure cross-origin requests don't fail on credential checks
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
 });
 
-// --- Debugging Interceptors ---
+// --- Network Diagnostics & Interceptors ---
 
 api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   // Add auth token
@@ -35,49 +34,75 @@ api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
       config.headers.Authorization = `Bearer ${session.access_token}`;
     }
   } catch (error) {
-    console.warn('[API Auth] Failed to get session:', error);
+    console.warn('[API Auth] Session retrieval failed:', error);
   }
 
-  // Debug Logging
-  console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, {
-    params: config.params,
-    data: config.data,
-  });
+  // Diagnostics Logging
+  console.log('--- API Request Diagnostics ---');
+  console.log('Base URL:', api.defaults.baseURL);
+  console.log('Request Path:', config.url);
+  console.log('Full Request URL:', (config.baseURL || '') + (config.url || ''));
+  console.log('Method:', config.method?.toUpperCase());
+  console.log('Payload:', config.data);
   
   return config;
 }, (error) => {
-  console.error('[API Request Error]', error);
+  console.error('[API Request Error] Diagnostics:', error);
   return Promise.reject(error);
 });
 
 api.interceptors.response.use(
   (response) => {
-    console.log(`[API Response] ${response.status} ${response.config.url}`, response.data);
+    console.log(`[API Response Success] ${response.status} ${response.config.url}`);
     return response;
   },
   (error: AxiosError) => {
-    const status = error.response?.status;
-    const url = error.config?.url;
-    const message = error.message;
-
-    // Detailed Error Logging
-    console.error(`[API Error] ${status || 'Network'} ${url}`, {
-      message,
-      data: error.response?.data,
-      code: error.code,
-    });
-
-    if (status === 401) {
-      console.warn('[API Auth] Session expired or unauthorized');
-    }
-
-    if (error.code === 'ECONNABORTED' && message.includes('timeout')) {
-      console.error('[API Timeout] Request exceeded 60s limit');
+    console.log('--- API Error Diagnostics ---');
+    console.log('Axios Error Object:', error);
+    console.log('Axios Code:', error.code);
+    console.log('Axios Message:', error.message);
+    
+    if (error.response) {
+      // The server responded with a status code that falls out of the range of 2xx
+      console.error('[API Error: Server Response]', {
+        status: error.response.status,
+        data: error.response.data,
+        headers: error.response.headers,
+      });
+    } else if (error.request) {
+      // The request was made but no response was received
+      // `error.request` is an instance of XMLHttpRequest in the browser
+      console.error('[API Error: No Response Received]', {
+        request: error.request,
+        reason: 'Possible CORS, Network Interruption, or Proxy Timeout',
+      });
+      
+      if (error.code === 'ECONNABORTED') {
+        console.error('[API Error: Timeout] Request exceeded 300s limit');
+      }
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('[API Error: Setup/Config Issue]', error.message);
     }
 
     return Promise.reject(error);
   }
 );
+
+// --- API Health Check ---
+
+export async function checkApiHealth(): Promise<boolean> {
+  try {
+    console.log('[Health Check] Verifying API availability...');
+    const response = await api.get('/health', { timeout: 5000 });
+    const isUp = response.status === 200;
+    console.log(`[Health Check] Result: ${isUp ? 'ONLINE' : 'OFFLINE'}`);
+    return isUp;
+  } catch (err) {
+    console.warn('[Health Check] API health check failed:', err);
+    return false;
+  }
+}
 
 // --- Dashboard API ---
 
@@ -105,6 +130,29 @@ export async function getScans(limit?: number) {
   } catch (error) {
     return [];
   }
+}
+
+export async function clearScans() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Authentication required to clear history');
+  
+  const { error } = await supabase
+    .from('scans')
+    .delete()
+    .eq('user_id', user.id);
+    
+  if (error) throw error;
+  return { success: true };
+}
+
+export async function deleteScan(id: string) {
+  const { error } = await supabase
+    .from('scans')
+    .delete()
+    .eq('id', id);
+    
+  if (error) throw error;
+  return { success: true };
 }
 
 // --- Settings API ---
@@ -137,30 +185,41 @@ export async function deleteAccount() {
 // --- Core Scan Logic ---
 
 export async function performScan(input: string): Promise<ScanResult> {
+  // 1. Pre-scan health check to verify direct connection
+  const apiHealthy = await checkApiHealth();
+  if (!apiHealthy) {
+    throw new Error('Threat Intelligence Engine is currently unreachable. Please check your network connection or try again later.');
+  }
+
   try {
     const payload = {
       input,
       type: detectInputType(input),
     };
 
+    console.log(`[Scan Engine] Initiating analysis for: ${input}`);
     const response = await api.post('/scan', payload);
     
-    // Ensure we handle both wrapper and direct data patterns
     const result = response.data.data || response.data;
     
-    if (!result || typeof result !== 'object') {
-      throw new Error('Invalid response format from scan engine');
+    // Clean up AI explanation: remove debug/status tags like [Offline Mode]
+    if (result && typeof result.ai_explanation === 'string') {
+      result.ai_explanation = result.ai_explanation.replace(/\[Offline Mode\]/gi, '').trim();
     }
 
     return result;
   } catch (error: any) {
-    // Graceful error classification for the UI
+    // Detailed error classification
     if (error.code === 'ECONNABORTED') {
-      throw new Error('Analysis is taking longer than expected. Please try again in a few moments.');
+      throw new Error('Analysis timed out after 300s. This usually happens with extremely complex threat networks or slow upstream providers.');
     }
     
+    if (!error.response && error.request) {
+      throw new Error('Network interruption detected. The request was sent but the connection was closed before the engine could respond.');
+    }
+
     if (error.response?.status === 500) {
-      throw new Error('The scan engine encountered an internal error. Our team has been notified.');
+      throw new Error('The threat engine encountered an internal error while analyzing this resource.');
     }
 
     throw error;
@@ -174,22 +233,10 @@ export async function getGraphData(entity: string): Promise<GraphData> {
   return response.data.data || response.data;
 }
 
-// --- Health ---
-
-export async function checkApiHealth(): Promise<boolean> {
-  try {
-    const response = await api.get('/health');
-    return response.status === 200;
-  } catch {
-    return false;
-  }
-}
-
 // --- Helpers ---
 
 function detectInputType(input: string): 'url' | 'domain' | 'text' {
   if (input.startsWith('http://') || input.startsWith('https://')) return 'url';
-  // Basic domain regex
   if (/^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(input)) return 'domain';
   return 'text';
 }

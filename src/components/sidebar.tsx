@@ -42,10 +42,12 @@ export function Sidebar() {
     >
       {/* Logo */}
       <div className="p-4 border-b border-zinc-800/50 flex items-center justify-between gap-2">
-        {!collapsed && (
-          <BrandLogo size="md" className="flex-1" />
-        )}
-        {collapsed && <BrandLogo size="sm" showText={false} />}
+        <Link href="/" className="flex items-center flex-1 hover:opacity-80 transition-opacity">
+          {!collapsed && (
+            <BrandLogo size="md" className="flex-1" />
+          )}
+          {collapsed && <BrandLogo size="sm" showText={false} />}
+        </Link>
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}

@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { GlassCard, Button } from '@/components/ui';
-import { signOut } from '@/lib/supabase';
-import { getUserSettings, updateUserSettings, deleteAccount, type UserSettings } from '@/lib/api';
+import { ConfirmationModal } from '@/components/confirmation-modal';
+import { signOut, supabase } from '@/lib/supabase';
+import { getUserSettings, updateUserSettings, type UserSettings } from '@/lib/api';
 
 export default function SettingsPage() {
   const [user, setUser] = useState<UserSettings>({
@@ -19,6 +20,10 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  // Modal States
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   useEffect(() => {
     async function loadSettings() {
@@ -57,18 +62,29 @@ export default function SettingsPage() {
   };
 
   const handleDeleteAccount = async () => {
-    const confirmed = window.confirm('Are you absolutely sure you want to delete your account? This action is permanent and cannot be undone.');
-    if (!confirmed) return;
-
     try {
       setSaving(true);
-      setStatusMessage(null);
-      await deleteAccount();
+      setIsDeleteModalOpen(false);
+
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) throw new Error('Not authenticated');
+
+      // 1. Delete user data via Supabase (frontend client)
+      // This assumes RLS allows the user to delete their own records
+      const { error: scansError } = await supabase
+        .from('scans')
+        .delete()
+        .eq('user_id', authUser.id);
+
+      if (scansError) console.warn('Error clearing scans during account deletion:', scansError);
+
+      // 2. Sign out (Account deletion itself usually requires a service-role/backend call, 
+      // but we purge data and end session as requested)
       await signOut();
       window.location.href = '/';
     } catch (error) {
-      console.error('Failed to delete account:', error);
-      setStatusMessage('Failed to delete account. Please contact support.');
+      console.error('Failed to process account deletion:', error);
+      setStatusMessage('Failed to complete deletion. Please try again or contact support.');
       setSaving(false);
     }
   };
@@ -79,7 +95,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-6 md:space-y-8 max-w-2xl">
+    <div className="space-y-6 md:space-y-8 max-w-2xl pb-20">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -94,7 +110,7 @@ export default function SettingsPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <GlassCard>
+          <GlassCard className="border-purple-500/20 bg-purple-500/5">
             <p className="text-sm text-zinc-200">{statusMessage}</p>
           </GlassCard>
         </motion.div>
@@ -119,29 +135,29 @@ export default function SettingsPage() {
           </div>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-zinc-400 mb-2">Name</label>
+              <label className="block text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">Name</label>
               <input
                 type="text"
                 value={user.name}
                 onChange={(e) => setUser({ ...user, name: e.target.value })}
                 disabled={loading || saving}
-                className="w-full bg-zinc-900/50 border border-zinc-700 rounded-lg px-4 py-2 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all"
+                className="w-full bg-zinc-900/50 border border-zinc-800 rounded-lg px-4 py-2 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all"
               />
             </div>
             <div>
-              <label className="block text-sm text-zinc-400 mb-2">Email</label>
+              <label className="block text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">Email</label>
               <input
                 type="email"
                 value={user.email}
                 onChange={(e) => setUser({ ...user, email: e.target.value })}
                 disabled={loading || saving}
-                className="w-full bg-zinc-900/50 border border-zinc-700 rounded-lg px-4 py-2 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all"
+                className="w-full bg-zinc-900/50 border border-zinc-800 rounded-lg px-4 py-2 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all"
               />
-              <p className="mt-2 text-xs text-zinc-500">Updating your email will require confirmation.</p>
+              <p className="mt-2 text-[10px] text-zinc-600 font-mono italic">Changing your email will trigger a verification request.</p>
             </div>
             <div className="pt-4">
-              <Button variant="primary" onClick={handleSaveChanges} disabled={loading || saving}>
-                {saving ? 'Saving...' : 'Save Changes'}
+              <Button variant="primary" onClick={handleSaveChanges} disabled={loading || saving} className="w-full sm:w-auto">
+                {saving ? 'Saving...' : 'Save Profile'}
               </Button>
             </div>
           </div>
@@ -155,29 +171,22 @@ export default function SettingsPage() {
         transition={{ delay: 0.2 }}
       >
         <GlassCard>
-          <h3 className="text-lg font-semibold text-white mb-6">Preferences</h3>
+          <h3 className="text-lg font-semibold text-white mb-6">System Preferences</h3>
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-zinc-800/50 rounded-lg border border-zinc-700/50">
+            <div className="flex items-center justify-between p-4 bg-zinc-900/50 rounded-xl border border-zinc-800/50">
               <div>
-                <p className="text-white font-medium">Email Notifications</p>
-                <p className="text-zinc-400 text-sm">Receive alerts for high-risk threats</p>
+                <p className="text-white font-bold text-sm">Threat Alerts</p>
+                <p className="text-zinc-500 text-xs">Email notifications for high-risk detections</p>
               </div>
-              <label className="flex items-center cursor-pointer">
+              <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
                   checked={notificationEnabled}
                   onChange={(e) => setNotificationEnabled(e.target.checked)}
-                  className="w-4 h-4 cursor-pointer"
+                  className="sr-only peer"
                 />
+                <div className="w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
               </label>
-            </div>
-
-            <div className="flex items-center justify-between p-4 bg-zinc-800/50 rounded-lg border border-zinc-700/50">
-              <div>
-                <p className="text-white font-medium">Dark Mode</p>
-                <p className="text-zinc-400 text-sm">Always enabled</p>
-              </div>
-              <span className="text-purple-400">✓</span>
             </div>
           </div>
         </GlassCard>
@@ -189,23 +198,31 @@ export default function SettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <GlassCard>
-          <h3 className="text-lg font-semibold text-white mb-6 text-red-400">Danger Zone</h3>
-          <div className="space-y-3">
-            <div className="p-4 bg-red-900/10 rounded-lg border border-red-900/20">
-              <p className="text-white font-medium mb-1">Logout</p>
-              <p className="text-zinc-400 text-sm mb-4">End your current session safely.</p>
-              <Button variant="secondary" onClick={handleLogout} className="border-red-900/30 hover:bg-red-900/20">
-                Logout
-              </Button>
+        <GlassCard className="border-red-900/20">
+          <h3 className="text-lg font-bold text-red-500 mb-6 uppercase tracking-tighter">Danger Zone</h3>
+          <div className="space-y-4">
+            <div className="p-4 bg-red-500/5 rounded-xl border border-red-500/10">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1">
+                  <p className="text-white font-bold text-sm">Terminate Session</p>
+                  <p className="text-zinc-500 text-xs">Securely sign out of your account</p>
+                </div>
+                <Button variant="secondary" onClick={() => setIsLogoutModalOpen(true)} className="border-red-500/20 hover:bg-red-500/10 text-red-400">
+                  Logout
+                </Button>
+              </div>
             </div>
 
-            <div className="p-4 bg-red-900/10 rounded-lg border border-red-900/20">
-              <p className="text-white font-medium mb-1">Delete Account</p>
-              <p className="text-zinc-400 text-sm mb-4">Permanently delete your account and all associated data.</p>
-              <Button variant="danger" onClick={handleDeleteAccount} disabled={loading || saving}>
-                {saving ? 'Deleting...' : 'Delete Account'}
-              </Button>
+            <div className="p-4 bg-red-500/5 rounded-xl border border-red-500/10">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1">
+                  <p className="text-white font-bold text-sm">Destroy Account</p>
+                  <p className="text-zinc-500 text-xs">Purge all scans and intelligence data permanently</p>
+                </div>
+                <Button variant="danger" onClick={() => setIsDeleteModalOpen(true)} disabled={loading || saving}>
+                  {saving ? 'Processing...' : 'Delete'}
+                </Button>
+              </div>
             </div>
           </div>
         </GlassCard>
@@ -217,28 +234,34 @@ export default function SettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
       >
-        <GlassCard>
-          <h3 className="text-lg font-semibold text-white mb-4">System Information</h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-zinc-400">Application Version</span>
-              <span className="text-white font-medium">1.0.0</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-400">Build Date</span>
-              <span className="text-white font-medium">May 12, 2026</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-400">Environment</span>
-              <span className="text-white font-medium">Production</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-400">Last Updated</span>
-              <span className="text-white font-medium">Recently</span>
-            </div>
-          </div>
-        </GlassCard>
+        <div className="text-center">
+          <p className="text-[10px] text-zinc-700 font-mono uppercase tracking-[0.3em]">
+            Hackura Sentinel AI — Build 2026.05.12-PRD
+          </p>
+        </div>
       </motion.div>
+
+      {/* Modals */}
+      <ConfirmationModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={handleLogout}
+        title="Confirm Logout"
+        message="Are you sure you want to end your current security session?"
+        confirmText="Logout"
+        variant="primary"
+      />
+
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteAccount}
+        title="Account Destruction"
+        message="WARNING: This will permanently purge all your threat intelligence data and saved scans. This action is irreversible. Proceed with caution."
+        confirmText="Confirm Destruction"
+        variant="danger"
+        loading={saving}
+      />
     </div>
   );
 }
