@@ -231,7 +231,6 @@ export default function ScanPage() {
 
         <GlassCard className="border-purple-500/10">
           <div className="flex items-start gap-3">
-            <span className="text-2xl">🔍</span>
             <div>
               <h4 className="font-bold text-white text-sm mb-1">Deep Intelligence</h4>
               <p className="text-xs text-zinc-400">

@@ -81,7 +81,6 @@ export default function GraphExplorerPage() {
         ) : (
           <GlassCard className="h-[600px] flex items-center justify-center border-dashed border-zinc-800">
             <div className="text-center group">
-              <div className="text-6xl mb-6 opacity-20 group-hover:opacity-40 transition-opacity">🕸️</div>
               <h3 className="text-zinc-500 font-mono text-xs uppercase tracking-[0.5em] mb-4">Initialize Intelligence Scan</h3>
               <p className="text-zinc-600 text-[10px] max-w-xs mx-auto leading-relaxed uppercase tracking-widest">
                 Enter a network entity in the command bar to map relationships and detect malicious infrastructure patterns.

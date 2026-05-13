@@ -208,7 +208,6 @@ export default function LiveScanResultsPage() {
                 <div className="space-y-2">
                   {data.errors.map((err, idx) => (
                     <div key={idx} className="text-xs text-yellow-200/70 flex items-start gap-2">
-                      <span className="text-yellow-400 mt-0.5">⚠</span>
                       <div>
                         <p className="font-mono">{err.phase}</p>
                         <p>{err.message}</p>
@@ -381,7 +380,7 @@ function StatusIndicatorsCard({ data }: { data: LiveScanData }) {
         {statusPhases.map((phase) => (
           <div key={phase.phase} className="flex items-center gap-2">
             {phase.complete ? (
-              <div className="text-green-500">✓</div>
+              <div className="text-green-500">Done</div>
             ) : (
               <div className="text-purple-400 animate-pulse">⟳</div>
             )}

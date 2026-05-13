@@ -73,17 +73,17 @@ export default function DashboardPage() {
       <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {stats ? (
           <>
-            <OverviewCard title="Total Scans" value={stats.total_scans} icon="🔍" trend={{ value: stats.trend?.total_scans_change || 0, isPositive: true }} />
-            <OverviewCard title="Risk Alerts" value={stats.risk_alerts} icon="⚠️" trend={{ value: stats.trend?.risk_alerts_change || 0, isPositive: false }} />
-            <OverviewCard title="Malicious URLs" value={stats.malicious_urls} icon="🚫" trend={{ value: stats.trend?.malicious_urls_change || 0, isPositive: false }} />
-            <OverviewCard title="Safe Browsing" value={stats.safe_browsing} icon="✓" trend={{ value: stats.trend?.safe_browsing_change || 0, isPositive: true }} />
+            <OverviewCard title="Total Scans" value={stats.total_scans} trend={{ value: stats.trend?.total_scans_change || 0, isPositive: true }} />
+            <OverviewCard title="Risk Alerts" value={stats.risk_alerts} trend={{ value: stats.trend?.risk_alerts_change || 0, isPositive: false }} />
+            <OverviewCard title="Malicious URLs" value={stats.malicious_urls} trend={{ value: stats.trend?.malicious_urls_change || 0, isPositive: false }} />
+            <OverviewCard title="Safe Browsing" value={stats.safe_browsing} trend={{ value: stats.trend?.safe_browsing_change || 0, isPositive: true }} />
           </>
         ) : (
           <>
-            <OverviewCard title="Total Scans" value="—" icon="🔍" />
-            <OverviewCard title="Risk Alerts" value="—" icon="⚠️" />
-            <OverviewCard title="Malicious URLs" value="—" icon="🚫" />
-            <OverviewCard title="Safe Browsing" value="—" icon="✓" />
+            <OverviewCard title="Total Scans" value="—" />
+            <OverviewCard title="Risk Alerts" value="—" />
+            <OverviewCard title="Malicious URLs" value="—" />
+            <OverviewCard title="Safe Browsing" value="—" />
           </>
         )}
       </motion.div>

@@ -8,7 +8,7 @@ import { ScanResult } from '@/types';
 interface OverviewCardProps {
   title: string;
   value: string | number;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   trend?: { value: number; isPositive: boolean };
   className?: string;
 }
@@ -25,7 +25,7 @@ export function OverviewCard({ title, value, icon, trend, className = '' }: Over
           </p>
         )}
       </div>
-      <div className="text-purple-400 text-3xl opacity-50">{icon}</div>
+      {icon && <div className="text-purple-400 text-3xl opacity-50">{icon}</div>}
     </GlassCard>
   );
 }
