@@ -153,9 +153,6 @@ export default function LiveScanResultsPage() {
               {/* DNS Intelligence */}
               <DNSIntelligenceCard data={data} />
 
-              {/* ASN & GeoIP */}
-              <GeoIPCard data={data} />
-
               {/* SSL Analysis */}
               <SSLAnalysisCard data={data} />
 
@@ -424,49 +421,6 @@ function DNSIntelligenceCard({ data }: { data: LiveScanData }) {
             </span>
           </div>
         ))}
-      </div>
-    </GlassCard>
-  );
-}
-
-function GeoIPCard({ data }: { data: LiveScanData }) {
-  const geoData = data.recon_data?.geoip_info;
-  const asnData = data.recon_data?.asn_info;
-
-  if (!geoData && !asnData) {
-    return (
-      <GlassCard className="border-zinc-800/50">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider">GeoIP & ASN</h3>
-          <div className="text-[10px] text-zinc-600 flex items-center gap-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
-            Gathering...
-          </div>
-        </div>
-        <div className="h-12 bg-zinc-900/50 rounded animate-pulse border border-zinc-800/50" />
-      </GlassCard>
-    );
-  }
-
-  return (
-    <GlassCard className="border-green-500/10">
-      <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-3">GeoIP & ASN</h3>
-      <div className="space-y-3">
-        {geoData && (
-          <div className="text-[11px]">
-            <p className="text-zinc-600 mb-1">Location</p>
-            <p className="text-green-400 font-mono">
-              {geoData.country}, {geoData.city}
-            </p>
-          </div>
-        )}
-        {asnData && (
-          <div className="text-[11px]">
-            <p className="text-zinc-600 mb-1">ASN</p>
-            <p className="text-green-400 font-mono">{asnData.asn_number}</p>
-            <p className="text-green-400/60 text-[10px] mt-1">{asnData.organization}</p>
-          </div>
-        )}
       </div>
     </GlassCard>
   );

@@ -54,9 +54,10 @@ const RISK_COLORS: Record<string, string> = {
 
 export function GraphVisualizer({ data, loading = false }: GraphVisualizerProps) {
   const fgRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  const [dimensions, setDimensions] = useState({ width: 800, height: 720 });
 
   const getLinkNodeId = (node: string | { id?: string }) =>
     typeof node === 'string' ? node : node.id || '';
@@ -99,11 +100,11 @@ export function GraphVisualizer({ data, loading = false }: GraphVisualizerProps)
   // Handle dimensions
   useEffect(() => {
     const updateDimensions = () => {
-      const container = document.getElementById('graph-container');
+      const container = containerRef.current;
       if (container) {
         setDimensions({
           width: container.clientWidth,
-          height: 600
+          height: Math.max(container.clientHeight, 420),
         });
       }
     };
@@ -183,7 +184,7 @@ export function GraphVisualizer({ data, loading = false }: GraphVisualizerProps)
   // 3. UI SAFETY: Show loading state if data is not ready
   if (loading || !data) {
     return (
-      <GlassCard className="h-[600px] flex flex-col items-center justify-center border-purple-500/10 bg-black/40">
+      <GlassCard className="h-full min-h-[420px] flex flex-col items-center justify-center border-purple-500/10 bg-black/40">
         <div className="relative">
           <motion.div
             animate={{ rotate: 360 }}
@@ -204,7 +205,7 @@ export function GraphVisualizer({ data, loading = false }: GraphVisualizerProps)
   // 4. EMPTY STATE SAFETY
   if (normalizedData.nodes.length === 0) {
     return (
-      <GlassCard className="h-[600px] flex flex-col items-center justify-center border-dashed border-zinc-800 bg-black/20">
+      <GlassCard className="h-full min-h-[420px] flex flex-col items-center justify-center border-dashed border-zinc-800 bg-black/20">
         <p className="text-4xl mb-4 grayscale opacity-20">🕳️</p>
         <p className="text-zinc-600 font-mono text-[10px] uppercase tracking-widest text-center max-w-xs leading-relaxed">
           The requested entity returned zero intelligence nodes. <br/>Check the identifier and try again.
@@ -214,7 +215,7 @@ export function GraphVisualizer({ data, loading = false }: GraphVisualizerProps)
   }
 
   return (
-    <div className="relative h-full" id="graph-container">
+    <div className="relative h-full min-h-[420px] overflow-visible" ref={containerRef}>
       {/* Search Header */}
       <div className="absolute top-4 left-4 z-10 w-64">
         <div className="relative">
@@ -230,7 +231,7 @@ export function GraphVisualizer({ data, loading = false }: GraphVisualizerProps)
       </div>
 
       {/* Force Graph Render */}
-      <div className="rounded-xl overflow-hidden border border-zinc-800/50 bg-black/60 shadow-2xl">
+      <div className="rounded-xl border border-zinc-800/50 bg-black/60 shadow-2xl">
         <ForceGraph2D
           ref={fgRef}
           graphData={safeGraphData}

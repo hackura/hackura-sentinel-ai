@@ -32,7 +32,7 @@ export default function GraphExplorerPage() {
   };
 
   return (
-    <div className="space-y-6 md:space-y-8 pb-10">
+    <div className="h-full min-h-[calc(100vh-140px)] flex flex-col gap-6 md:gap-8 pb-4 w-full">
       {/* Header Section */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -75,11 +75,11 @@ export default function GraphExplorerPage() {
       </motion.div>
 
       {/* Main Visualization Area */}
-      <div>
+      <div className="flex-1 min-h-[420px] w-full">
         {graphData || loading ? (
           <GraphVisualizer data={graphData || { nodes: [], edges: [] }} loading={loading} />
         ) : (
-          <GlassCard className="h-[600px] flex items-center justify-center border-dashed border-zinc-800">
+          <GlassCard className="h-full min-h-[420px] flex items-center justify-center border-dashed border-zinc-800">
             <div className="text-center group">
               <h3 className="text-zinc-500 font-mono text-xs uppercase tracking-[0.5em] mb-4">Initialize Intelligence Scan</h3>
               <p className="text-zinc-600 text-[10px] max-w-xs mx-auto leading-relaxed uppercase tracking-widest">
@@ -91,7 +91,7 @@ export default function GraphExplorerPage() {
       </div>
 
       {/* Footer System Specs */}
-      <div className="flex flex-wrap gap-6 mt-4 opacity-30">
+      <div className="flex flex-wrap gap-6 mt-1 opacity-30">
         <div className="flex items-center gap-2">
           <span className="text-[9px] font-mono text-zinc-500 uppercase">Engine:</span>
           <span className="text-[9px] font-mono text-purple-400 uppercase">H-Sent-v1-Force</span>
