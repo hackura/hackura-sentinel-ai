@@ -5,10 +5,13 @@ import { ProtectedRoute } from '@/components/protected-route';
 import { useState } from 'react';
 import { SidebarProvider, useSidebar } from '@/context/sidebar-context';
 import { BrandLogo } from '@/components/brand-logo';
+import { useOnboardingRedirect } from '@/hooks/useOnboardingRedirect';
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const { collapsed } = useSidebar();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Check if user needs onboarding - will auto-redirect if needed
+  useOnboardingRedirect();
 
   return (
     <div className="w-full h-screen overflow-hidden bg-black relative">

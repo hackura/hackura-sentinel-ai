@@ -36,11 +36,13 @@ export default function LoginPage() {
       const { error } = await signInWithEmail(email, password);
       if (error) throw error;
       
-      // Redirect to dashboard on success
-      router.push('/dashboard');
+      // Wait a moment for the session to be established, then redirect to callback
+      // The callback page will handle onboarding logic
+      setTimeout(() => {
+        router.push('/auth/callback');
+      }, 100);
     } catch (err: any) {
       setError(err.message || 'Failed to sign in');
-    } finally {
       setLoading(false);
     }
   };

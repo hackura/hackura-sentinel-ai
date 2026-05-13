@@ -6,9 +6,12 @@ import { GlassCard, Button } from '@/components/ui';
 import { ConfirmationModal } from '@/components/confirmation-modal';
 import { signOut, supabase } from '@/lib/supabase';
 import { getUserSettings, updateUserSettings, type UserSettings } from '@/lib/api';
+import { useAuth } from '@/context/auth-context';
+import { getUserProfile, updateUserProfile } from '@/lib/onboarding';
 
 export default function SettingsPage() {
-  const [user, setUser] = useState<UserSettings>({
+  const { user } = useAuth();
+  const [user_data, setUserData] = useState<UserSettings>({
     email: '',
     name: 'Security Analyst',
     email_notifications: true,
@@ -16,6 +19,7 @@ export default function SettingsPage() {
     api_key_last4: null,
     api_key_created_at: null,
   });
+  const [displayName, setDisplayName] = useState<string>('');
   const [notificationEnabled, setNotificationEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -29,8 +33,14 @@ export default function SettingsPage() {
     async function loadSettings() {
       try {
         const settings = await getUserSettings();
-        setUser(settings);
+        setUserData(settings);
         setNotificationEnabled(settings.email_notifications);
+
+        // Load display name from user_profiles
+        if (user?.id) {
+          const profile = await getUserProfile(user.id);
+          setDisplayName(profile?.display_name || settings.name);
+        }
       } catch (error) {
         console.error('Failed to load settings:', error);
       } finally {
@@ -39,19 +49,30 @@ export default function SettingsPage() {
     }
 
     loadSettings();
-  }, []);
+  }, [user?.id]);
 
   const handleSaveChanges = async () => {
     try {
       setSaving(true);
       setStatusMessage(null);
+      
+      // Update general settings
       const updated = await updateUserSettings({
-        name: user.name,
-        email: user.email,
+        name: user_data.name,
+        email: user_data.email,
         email_notifications: notificationEnabled,
       });
-      setUser(updated);
+      setUserData(updated);
       setNotificationEnabled(updated.email_notifications);
+
+      // Update display_name in user_profiles
+      if (user?.id && displayName) {
+        await updateUserProfile(user.id, {
+          display_name: displayName,
+          full_name: displayName,
+        });
+      }
+
       setStatusMessage('Settings saved successfully. Note: If you changed your email, please check your inbox for a confirmation link.');
     } catch (error) {
       console.error('Failed to save settings:', error);
@@ -126,30 +147,31 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-white">User Profile</h3>
             <div className="w-12 h-12 rounded-full border border-zinc-700 overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
-              {user.avatar_url ? (
-                <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+              {user_data.avatar_url ? (
+                <img src={user_data.avatar_url} alt={displayName} className="w-full h-full object-cover" />
               ) : (
-                user.name.charAt(0).toUpperCase()
+                displayName.charAt(0).toUpperCase()
               )}
             </div>
           </div>
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">Name</label>
+              <label className="block text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">Display Name</label>
               <input
                 type="text"
-                value={user.name}
-                onChange={(e) => setUser({ ...user, name: e.target.value })}
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
                 disabled={loading || saving}
                 className="w-full bg-zinc-900/50 border border-zinc-800 rounded-lg px-4 py-2 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all"
               />
+              <p className="mt-1 text-[10px] text-zinc-600">This is the name shown in your profile and dashboard</p>
             </div>
             <div>
               <label className="block text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">Email</label>
               <input
                 type="email"
-                value={user.email}
-                onChange={(e) => setUser({ ...user, email: e.target.value })}
+                value={user_data.email}
+                onChange={(e) => setUserData({ ...user_data, email: e.target.value })}
                 disabled={loading || saving}
                 className="w-full bg-zinc-900/50 border border-zinc-800 rounded-lg px-4 py-2 text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all"
               />

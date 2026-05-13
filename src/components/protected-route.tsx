@@ -4,10 +4,12 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { LoadingSpinner } from '@/components/ui';
+import { useOnboardingRedirect } from '@/hooks/useOnboardingRedirect';
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { isLoading, isSignedIn } = useAuth();
+  const { isChecking } = useOnboardingRedirect(['/onboarding', '/auth/callback', '/auth/login', '/auth/signup']);
 
   useEffect(() => {
     if (!isLoading && !isSignedIn) {
@@ -15,7 +17,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     }
   }, [isLoading, isSignedIn, router]);
 
-  if (isLoading) {
+  if (isLoading || isChecking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
         <div className="text-center">

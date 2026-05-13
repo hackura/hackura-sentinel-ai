@@ -1,11 +1,13 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useSidebar } from '@/context/sidebar-context';
 import { useAuth } from '@/context/auth-context';
 import { signOut } from '@/lib/supabase';
+import { getUserProfile } from '@/lib/onboarding';
 import type { User } from '@supabase/supabase-js';
 import { BrandLogo } from '@/components/brand-logo';
 
@@ -13,13 +15,55 @@ export function Sidebar() {
   const pathname = usePathname();
   const { collapsed, toggleCollapsed } = useSidebar();
   const { user } = useAuth();
+  const [displayName, setDisplayName] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadProfileName() {
+      if (!user?.id) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const profile = await getUserProfile(user.id);
+        if (isMounted) {
+          setDisplayName(
+            profile?.display_name || 
+            (user as any)?.user_metadata?.full_name || 
+            user.email?.split('@')[0] || 
+            'User'
+          );
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+        if (isMounted) {
+          setDisplayName(
+            (user as any)?.user_metadata?.full_name || 
+            user.email?.split('@')[0] || 
+            'User'
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadProfileName();
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id]);
 
   const getUserDisplay = () => {
     const email = user?.email || '';
     const metadata = (user as any)?.user_metadata || {};
-    const name = metadata.full_name || email.split('@')[0];
     const avatar = metadata.avatar_url;
-    return { name, email, avatar };
+    return { name: displayName, email, avatar };
   };
 
   const { name, email, avatar } = getUserDisplay();

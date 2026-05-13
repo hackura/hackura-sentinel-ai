@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { OverviewCard, ScanCard, SimpleRiskChart } from '@/components/dashboard';
 import { GlassCard } from '@/components/ui';
 import { getDashboardStats, getScans } from '@/lib/api';
+import { DashboardGreeting } from '@/components/dashboard-greeting';
 import { ScanResult, DashboardStats } from '@/types';
 
 export default function DashboardPage() {
@@ -65,8 +66,7 @@ export default function DashboardPage() {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6 md:space-y-8">
       <motion.div variants={itemVariants}>
-        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Security Dashboard</h1>
-        <p className="text-sm md:text-base text-zinc-400">Real-time threat monitoring and analysis</p>
+        <DashboardGreeting className="mb-2" />
       </motion.div>
 
       {/* Stats Cards */}

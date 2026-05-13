@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { LoadingSpinner } from '@/components/ui';
+import { getUserProfile, createUserProfile } from '@/lib/onboarding';
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -22,14 +23,31 @@ export default function AuthCallbackPage() {
         }
 
         if (data.session) {
-          // User is authenticated, redirect to dashboard
-          router.push('/dashboard');
+          const user = data.session.user;
+
+          // Get or create user profile
+          let profile = await getUserProfile(user.id);
+
+          // If profile doesn't exist, create it
+          if (!profile) {
+            profile = await createUserProfile(user.id, user.email || '');
+          }
+
+          // Check if onboarding is complete
+          if (profile && !profile.onboarding_completed) {
+            // Redirect to onboarding if incomplete
+            router.push('/onboarding');
+          } else {
+            // User is authenticated and onboarding complete, redirect to dashboard
+            router.push('/dashboard');
+          }
         } else {
           // No session found
           setError('Authentication failed. Please try again.');
           setTimeout(() => router.push('/auth/login'), 3000);
         }
       } catch (err: any) {
+        console.error('Auth callback error:', err);
         setError(err.message || 'An error occurred during authentication');
         setTimeout(() => router.push('/auth/login'), 3000);
       }
