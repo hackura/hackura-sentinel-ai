@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { getUserProfile, createUserProfile } from '@/lib/onboarding';
+
+const DEFAULT_PUBLIC_ROUTES = ['/onboarding', '/auth/callback'];
 
 interface OnboardingState {
   needsOnboarding: boolean;
@@ -16,7 +18,7 @@ interface OnboardingState {
  * Should be used in layouts that need to protect against incomplete onboarding
  */
 export function useOnboardingRedirect(
-  publicRoutes: string[] = ['/onboarding', '/auth/callback']
+  publicRoutes: string[] = DEFAULT_PUBLIC_ROUTES
 ) {
   const router = useRouter();
   const { user, isLoading } = useAuth();
@@ -25,11 +27,16 @@ export function useOnboardingRedirect(
     isChecking: true,
     userProfile: null,
   });
+  const checkedUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
 
     async function checkOnboarding() {
+      if (user?.id && checkedUserIdRef.current === user.id && !isLoading) {
+        return;
+      }
+
       if (!user) {
         if (!isLoading) {
           setState({
@@ -51,6 +58,7 @@ export function useOnboardingRedirect(
         }
 
         if (isMounted) {
+          checkedUserIdRef.current = user.id;
           const needsOnboarding = !profile?.onboarding_completed;
 
           setState({
@@ -70,6 +78,7 @@ export function useOnboardingRedirect(
       } catch (error) {
         console.error('Error checking onboarding status:', error);
         if (isMounted) {
+          checkedUserIdRef.current = user?.id ?? null;
           setState({
             needsOnboarding: false,
             isChecking: false,
