@@ -1,5 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { ScanResult, GraphData } from '@/types';
+import { ScanResult, GraphData, ScanInitResponse, LiveScanData } from '@/types';
 import { getSession, supabase } from '@/lib/supabase';
 
 /**
@@ -182,7 +182,61 @@ export async function deleteAccount() {
   return response.data;
 }
 
-// --- Core Scan Logic ---
+// --- Async Scan Logic (New) ---
+
+export async function initiateScan(input: string): Promise<ScanInitResponse> {
+  /**
+   * Start a new scan and immediately return scanId
+   * Backend processes asynchronously; frontend polls for updates
+   */
+  try {
+    const payload = {
+      input,
+      type: detectInputType(input),
+    };
+
+    console.log(`[Async Scan] Initiating scan for: ${input}`);
+    const response = await api.post('/scan/initiate', payload);
+    
+    const result: ScanInitResponse = response.data.data || response.data;
+    console.log(`[Async Scan] Received scanId: ${result.scanId}`);
+    
+    return result;
+  } catch (error: any) {
+    const errorMessage = 
+      error.response?.data?.error ||
+      error.message ||
+      'Failed to initiate scan';
+    
+    console.error(`[Async Scan Error] ${errorMessage}`);
+    throw new Error(errorMessage);
+  }
+}
+
+export async function getLiveScanData(scanId: string): Promise<LiveScanData> {
+  /**
+   * Poll for live scan data
+   * Returns progressive updates as scan phases complete
+   */
+  try {
+    const response = await api.get(`/scan/${scanId}`, {
+      timeout: 10000, // 10s timeout for polling requests
+    });
+    
+    const data: LiveScanData = response.data.data || response.data;
+    return data;
+  } catch (error: any) {
+    const errorMessage =
+      error.response?.data?.error ||
+      error.message ||
+      'Failed to fetch scan data';
+    
+    console.error(`[Live Scan Fetch Error] ${errorMessage}`);
+    throw new Error(errorMessage);
+  }
+}
+
+// --- Core Scan Logic (Legacy) ---
 
 export async function performScan(input: string): Promise<ScanResult> {
   // 1. Pre-scan health check to verify direct connection

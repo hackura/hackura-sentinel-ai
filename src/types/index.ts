@@ -117,3 +117,95 @@ export interface ScanHistoryResponse {
   page?: number;
   limit?: number;
 }
+
+// Async Scan Types
+export type ScanStatus = 
+  | 'pending'
+  | 'processing'
+  | 'recon'
+  | 'threat_intelligence'
+  | 'graph_building'
+  | 'ai_enrichment'
+  | 'completed'
+  | 'failed';
+
+export interface ScanInitResponse {
+  success: boolean;
+  scanId: string;
+  status: 'processing';
+  input: string;
+  created_at: string;
+}
+
+export interface ScanStatusUpdate {
+  scanId: string;
+  status: ScanStatus;
+  progress: number; // 0-100
+  current_phase: string;
+  timestamp: string;
+}
+
+export interface LiveScanData {
+  scanId: string;
+  input: string;
+  status: ScanStatus;
+  progress: number;
+  
+  // Progressive data fields
+  recon_data?: {
+    domain_info?: Record<string, any>;
+    dns_records?: Record<string, any>;
+    whois_data?: Record<string, any>;
+    ssl_cert?: Record<string, any>;
+    asn_info?: Record<string, any>;
+    geoip_info?: Record<string, any>;
+  };
+  
+  threat_intelligence?: {
+    reputation_feeds?: {
+      abuseipdb?: Record<string, any>;
+      alienvault?: Record<string, any>;
+      urlhaus?: Record<string, any>;
+      phishtank?: Record<string, any>;
+      [key: string]: any;
+    };
+    ioc_relationships?: Array<{
+      type: string;
+      indicator: string;
+      context: string;
+    }>;
+    campaigns?: string[];
+    threat_actors?: string[];
+    malware_associations?: string[];
+  };
+  
+  graph_data?: GraphData;
+  
+  scoring?: {
+    risk_score?: number;
+    confidence_score?: number;
+    risk_level?: 'LOW' | 'MEDIUM' | 'HIGH';
+    factors?: Array<{
+      factor: string;
+      contribution: number;
+      evidence: string;
+    }>;
+  };
+  
+  ai_summary?: {
+    summary: string;
+    verdict: string;
+    key_findings: string[];
+    recommendations: string[];
+    generated_at?: string;
+  };
+  
+  errors?: Array<{
+    phase: string;
+    message: string;
+    recoverable: boolean;
+  }>;
+  
+  created_at: string;
+  updated_at: string;
+}
