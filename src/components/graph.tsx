@@ -6,6 +6,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { GlassCard, Button } from './ui';
 import { GraphData, GraphNode, NodeType } from '@/types';
 
+type GraphLink = {
+  source: string | { id?: string };
+  target: string | { id?: string };
+};
+
 // Dynamically import react-force-graph-2d to avoid SSR issues
 const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), {
   ssr: false,
@@ -48,16 +53,19 @@ const RISK_COLORS: Record<string, string> = {
 };
 
 export function GraphVisualizer({ data, loading = false }: GraphVisualizerProps) {
-  const fgRef = useRef<any>();
+  const fgRef = useRef<any>(null);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+
+  const getLinkNodeId = (node: string | { id?: string }) =>
+    typeof node === 'string' ? node : node.id || '';
 
   // 1. SAFE STATE INITIALIZATION: Normalize incoming data to ensure nodes/links are always arrays
   const normalizedData = useMemo(() => {
     return {
       nodes: Array.isArray(data?.nodes) ? data!.nodes : [],
-      links: Array.isArray((data as any)?.edges) ? (data as any).edges : (Array.isArray((data as any)?.links) ? (data as any).links : []),
+      links: (Array.isArray((data as any)?.edges) ? (data as any).edges : (Array.isArray((data as any)?.links) ? (data as any).links : [])) as GraphLink[],
     };
   }, [data]);
 
@@ -78,8 +86,8 @@ export function GraphVisualizer({ data, loading = false }: GraphVisualizerProps)
     const nodeIds = new Set(filteredNodes.map(n => n.id));
     
     // Filter links safely based on existing nodes
-    const filteredLinks = normalizedData.links.filter(l => 
-      nodeIds.has(l.source?.id || l.source) && nodeIds.has(l.target?.id || l.target)
+    const filteredLinks = normalizedData.links.filter((l: GraphLink) => 
+      nodeIds.has(getLinkNodeId(l.source)) && nodeIds.has(getLinkNodeId(l.target))
     );
     
     return { 

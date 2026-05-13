@@ -125,11 +125,16 @@ export function parseErrorResponse(error: any): { message: string; code?: string
 export async function checkNetworkResilience(): Promise<boolean> {
   try {
     // Use fetch instead of axios to avoid import issues
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
     const response = await fetch('/api/health', {
       method: 'HEAD',
       mode: 'no-cors',
-      timeout: 5000,
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
     return response.ok || response.type === 'opaque';
   } catch {
     return false;

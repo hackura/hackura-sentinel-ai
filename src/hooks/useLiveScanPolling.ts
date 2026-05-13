@@ -41,8 +41,8 @@ export function useLiveScanPolling({
 
   const pollIntervalRef = useRef(initialPollInterval);
   const retryCountRef = useRef(0);
-  const pollTimeoutRef = useRef<NodeJS.Timeout>();
-  const abortControllerRef = useRef<AbortController>();
+  const pollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Cleanup polling on unmount or when scanId changes
   useEffect(() => {
