@@ -49,7 +49,7 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16 px-6">
-            <Link href="/dashboard" className="w-full sm:w-auto">
+            <Link href="/auth/login" className="w-full sm:w-auto">
               <Button variant="primary" size="lg" className="w-full">
                 Launch Dashboard
               </Button>
