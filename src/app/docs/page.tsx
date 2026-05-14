@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation';
+import DocsHomePage from './home/page.mdx';
 
 export default function DocsIndexPage() {
-  redirect('/docs/home');
+  return <DocsHomePage />;
 }

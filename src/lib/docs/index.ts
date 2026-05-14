@@ -23,7 +23,7 @@ export function getDocsBreadcrumbs(href: string) {
   const group = getDocsGroupByHref(href);
 
   return [
-    { label: 'Docs', href: '/docs/home' },
+    { label: 'Docs', href: '/docs' },
     group ? { label: group.title, href } : null,
     page ? { label: page.title, href } : null,
   ].filter(Boolean) as Array<{ label: string; href: string }>;

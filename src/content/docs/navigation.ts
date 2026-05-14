@@ -19,7 +19,7 @@ export const DOC_NAV: DocNavGroup[] = [
       {
         title: 'Home',
         description: 'Overview and launchpad for the Hackura docs system.',
-        href: '/docs/home',
+        href: '/docs',
         summary: 'Documentation home',
         section: 'Start Here',
       },
