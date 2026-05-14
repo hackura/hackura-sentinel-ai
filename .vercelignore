@@ -40,7 +40,7 @@ Thumbs.db
 
 # Documentation
 *.md
-docs/
+/docs/
 
 # Development
 .env.example
