@@ -1,0 +1,38 @@
+import { DocsPage } from '@/components/docs/docs-page';
+import { DocsCallout } from '@/components/docs/docs-callout';
+import { SECURITY_TOC } from '@/content/docs/page-content';
+
+<DocsPage
+  eyebrow="Security"
+  title="Trust is part of the product"
+  description="Security is built into the scanning pipeline, API surface, and graph exploration experience so users can trust the platform before they trust the result."
+  toc={SECURITY_TOC}
+>
+  ## Rate limiting
+
+  Apply request limits to protect the service and keep usage predictable.
+
+  ## Scan protections
+
+  Validate input, bound recursion, and sanitize response handling.
+
+  ## SSRF protections
+
+  Prevent the scanner from being used as a proxy into internal networks or protected infrastructure.
+
+  ## Authentication
+
+  Use scoped keys and session-based auth depending on the access path.
+
+  ## Graph handling
+
+  Graph data should be handled as intelligence, not just visualization data. Keep source and confidence attached wherever possible.
+
+  ## Privacy
+
+  Avoid exposing unnecessary user details, and make sure scan and workspace data follow a least-privilege model.
+
+  <DocsCallout variant="warning" title="Trust posture">
+    A security product has to prove it is safe to use before it can be trusted with sensitive investigations.
+  </DocsCallout>
+</DocsPage>

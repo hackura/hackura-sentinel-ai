@@ -1,0 +1,31 @@
+import { DocsPage } from '@/components/docs/docs-page';
+import { DocsTerminal } from '@/components/docs/docs-terminal';
+import { DocsCallout } from '@/components/docs/docs-callout';
+import { EXAMPLES_TOC } from '@/content/docs/page-content';
+
+<DocsPage
+  eyebrow="Examples"
+  title="End-to-end examples"
+  description="These examples show how the docs, CLI, dashboard, and API fit together in a production workflow."
+  toc={EXAMPLES_TOC}
+>
+  ## Scan example
+
+  <DocsTerminal title="Request">{`curl -X POST https://api.hackura.app/scan/url \\
+  -H 'Content-Type: application/json' \\
+  -d '{"url":"https://example.com","use_graph":true}'`}</DocsTerminal>
+
+  ## Dashboard preview
+
+  The dashboard provides a clean triage workspace with scan history, result summaries, and graph exploration.
+
+  ## Graph preview
+
+  Graphs reveal clusters, redirect chains, and shared infrastructure so patterns become visible faster.
+
+  ## Automation
+
+  <DocsCallout variant="note" title="Tip">
+    Use the API for CI, the CLI for local triage, and the dashboard for human review.
+  </DocsCallout>
+</DocsPage>

@@ -1,0 +1,39 @@
+import { DocsPage } from '@/components/docs/docs-page';
+import { ArchitectureFlow } from '@/components/docs/docs-architecture';
+import { DocsCallout } from '@/components/docs/docs-callout';
+import { ARCHITECTURE_TOC } from '@/content/docs/page-content';
+
+<DocsPage
+  eyebrow="Platform architecture"
+  title="An enterprise threat intelligence pipeline"
+  description="Hackura Sentinel AI is built as a layered security platform so each stage of scanning, enrichment, scoring, and graph traversal stays observable and independently scalable."
+  toc={ARCHITECTURE_TOC}
+>
+  ## System flow
+
+  <ArchitectureFlow />
+
+  ## Supabase Auth
+
+  Supabase handles identity, session persistence, and profile onboarding. The docs portal and dashboard inherit the same auth model, which keeps UX and data access aligned.
+
+  ## AI risk engine
+
+  The risk engine combines deterministic indicators with AI-assisted weighting. It turns sparse signals into a defensible score with a confidence band, rather than a single opaque number.
+
+  <DocsCallout variant="tip" title="Why this matters">
+    Operators need to know not only what was flagged, but why the platform assigned that score.
+  </DocsCallout>
+
+  ## Graph intelligence with AuraDB
+
+  Graph intelligence links infrastructure through nodes and edges, then surfaces clusters, redirect chains, and inferred relationships for analysts.
+
+  ## Scan orchestration
+
+  The API layer coordinates the recon engine, enrichment providers, and graph synthesis. Each scan can fan out to DNS, certificate, ASN, and intelligence providers without blocking the user experience.
+
+  ## Frontend visualization
+
+  The dashboard visualizes everything in a responsive, interactive surface that lets you inspect nodes, risk, and evidence in real time.
+</DocsPage>

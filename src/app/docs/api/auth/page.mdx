@@ -1,0 +1,33 @@
+import { DocsPage } from '@/components/docs/docs-page';
+import { DocsTerminal } from '@/components/docs/docs-terminal';
+import { DocsCallout } from '@/components/docs/docs-callout';
+import { API_AUTH_TOC } from '@/content/docs/page-content';
+
+<DocsPage
+  eyebrow="API reference"
+  title="Authentication"
+  description="Authenticate every request with a scoped API key and standard headers."
+  toc={API_AUTH_TOC}
+>
+  ## API keys
+
+  API keys identify the caller and govern access limits, rate limits, and security controls.
+
+  ## Headers
+
+  - `X-API-Key`: Required for authenticated access
+  - `Content-Type`: `application/json` for requests with bodies
+
+  ## Example request
+
+  <DocsTerminal title="curl">{`curl -X POST https://api.hackura.app/scan/url \\
+  -H 'Content-Type: application/json' \\
+  -H 'X-API-Key: hk_live_...' \\
+  -d '{"url":"https://example.com"}'`}</DocsTerminal>
+
+  ## Security notes
+
+  <DocsCallout variant="tip" title="Best practice">
+    Store API keys in environment variables and never expose them in client-side JavaScript bundles.
+  </DocsCallout>
+</DocsPage>

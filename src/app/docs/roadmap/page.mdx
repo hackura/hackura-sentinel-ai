@@ -1,0 +1,33 @@
+import { DocsPage } from '@/components/docs/docs-page';
+import { DocsCallout } from '@/components/docs/docs-callout';
+import { ROADMAP_TOC } from '@/content/docs/page-content';
+
+<DocsPage
+  eyebrow="Roadmap"
+  title="What is coming next"
+  description="The platform roadmap focuses on deeper intelligence, better collaboration, and more ways to consume the same threat model."
+  toc={ROADMAP_TOC}
+>
+  ## Near term
+
+  - Browser extension
+  - SOC dashboard improvements
+  - Public API expansion
+  - Team collaboration features
+
+  ## Next up
+
+  - SIEM integrations
+  - Advanced graph AI
+  - Better automated enrichments
+
+  ## Long term
+
+  - Mobile apps
+  - Real-time monitoring
+  - Broader enterprise workflow support
+
+  <DocsCallout variant="tip" title="Platform direction">
+    The roadmap keeps the product focused on trust, analyst speed, and scalable intelligence workflows.
+  </DocsCallout>
+</DocsPage>

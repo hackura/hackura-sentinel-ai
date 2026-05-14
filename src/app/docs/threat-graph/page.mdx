@@ -1,0 +1,66 @@
+import { DocsPage } from '@/components/docs/docs-page';
+import { DocsCallout } from '@/components/docs/docs-callout';
+import { GlassCard } from '@/components/ui';
+import { THREAT_GRAPH_TOC } from '@/content/docs/page-content';
+
+<DocsPage
+  eyebrow="Threat graph"
+  title="The flagship intelligence surface"
+  description="Hackura Sentinel AI's graph view maps infrastructure into nodes and relationships so analysts can identify clusters, pivots, redirect chains, and shared attack surfaces quickly."
+  toc={THREAT_GRAPH_TOC}
+>
+  ## Graph concepts
+
+  The graph is built around entities, edges, and the intelligence attached to each connection. It surfaces what is connected, how strong the evidence is, and whether the relationship is observed or inferred.
+
+  ## Node types
+
+  Nodes can represent domains, IP addresses, URLs, ASN blocks, certificates, organizations, emails, hashes, campaigns, and malware families.
+
+  ## Edge types
+
+  **FACT edges** represent directly observed infrastructure relationships.
+
+  **INTEL edges** represent enrichment-backed connections from providers or internal analysis.
+
+  **AI-INFERRED edges** represent model-assisted hypotheses that help analysts explore likely links faster.
+
+  ## Confidence scoring
+
+  Confidence is influenced by:
+
+  - source reliability
+  - number of corroborating indicators
+  - path depth
+  - temporal proximity
+  - model certainty
+
+  <DocsCallout variant="tip" title="Graph reasoning">
+    The graph is more valuable when it explains why two nodes are connected rather than only showing the connection itself.
+  </DocsCallout>
+
+  ## Intelligence layers
+
+  1. Raw observations
+  2. Provider enrichment
+  3. AI reasoning
+  4. Relationship synthesis
+  5. Analyst review
+
+  ## Graph example
+
+  <GlassCard className="border-zinc-800/60 bg-zinc-950/60" hover={false}>
+    <div className="grid gap-3 md:grid-cols-3">
+      {[
+        ['Phishing cluster', 'A set of domains and redirects tied to the same campaign.'],
+        ['Redirect chain', 'A path of hops that obscures the final destination.'],
+        ['Shared infrastructure', 'Hostnames and ASNs reused across campaigns.'],
+      ].map(([title, text]) => (
+        <div key={title} className="rounded-2xl border border-zinc-800/70 bg-black/40 p-4">
+          <div className="text-sm font-semibold text-white">{title}</div>
+          <div className="mt-2 text-sm leading-7 text-zinc-400">{text}</div>
+        </div>
+      ))}
+    </div>
+  </GlassCard>
+</DocsPage>

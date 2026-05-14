@@ -21,6 +21,7 @@ export function PublicNavbar({ showHomeButton = false }: PublicNavbarProps) {
         <div className="flex items-center gap-6 text-sm text-zinc-400 font-medium">
           <Link href="/#features" className="hover:text-purple-300 transition hidden md:block">Features</Link>
           <Link href="/security" className="hover:text-purple-300 transition hidden md:block">Security</Link>
+          <Link href="/docs" className="hover:text-purple-300 transition hidden md:block">Docs</Link>
           {showHomeButton ? (
             <Link
               href="/"

@@ -1,0 +1,38 @@
+import { DocsPage } from '@/components/docs/docs-page';
+import { DocsTerminal } from '@/components/docs/docs-terminal';
+import { DocsCallout } from '@/components/docs/docs-callout';
+import { API_THREATS_TOC } from '@/content/docs/page-content';
+
+<DocsPage
+  eyebrow="API reference"
+  title="Threats"
+  description="Expose threat intelligence fields, scoring metadata, and analyst notes through a predictable API contract."
+  toc={API_THREATS_TOC}
+>
+  ## Threat object
+
+  The threat payload should describe observed indicators, confidence, and analyst-facing reasoning.
+
+  ## Scoring fields
+
+  - risk level
+  - confidence score
+  - weighting breakdown
+  - signal categories
+
+  ## Confidence
+
+  Confidence should reflect the support behind the signal, not just the final label.
+
+  <DocsTerminal title="Threat payload">{`{
+  "risk_level": "HIGH",
+  "confidence": 98.1,
+  "indicators": ["malicious_redirect", "new_domain"]
+}`}</DocsTerminal>
+
+  ## Notes
+
+  <DocsCallout variant="note" title="Stable contracts">
+    Keep the response shape consistent so both the dashboard and external consumers can use the same intelligence fields.
+  </DocsCallout>
+</DocsPage>

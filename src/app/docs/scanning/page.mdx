@@ -1,0 +1,57 @@
+import { DocsPage } from '@/components/docs/docs-page';
+import { DocsCallout } from '@/components/docs/docs-callout';
+import { DocsTerminal } from '@/components/docs/docs-terminal';
+import { SCANNING_TOC } from '@/content/docs/page-content';
+
+<DocsPage
+  eyebrow="Scanning"
+  title="What the scanner actually does"
+  description="The scanning pipeline is built to extract infrastructure signals, correlate them with threat intelligence, and expose the data in formats developers can use immediately."
+  toc={SCANNING_TOC}
+>
+  ## URL scanning
+
+  URL scanning resolves the request, follows redirects, inspects page metadata, and evaluates the destination against known threat indicators.
+
+  ## Domain analysis
+
+  Domains are enriched with DNS records, registrar metadata, certificate signals, and historical intelligence where available.
+
+  ## IP analysis
+
+  IP analysis evaluates host reputation, geolocation, ASN ownership, and network-level indicators that often surface malicious infrastructure.
+
+  ## DNS enrichment
+
+  The scanner captures A, AAAA, CNAME, MX, NS, TXT, and SOA records where relevant.
+
+  ## ASN and GeoIP
+
+  ASN and GeoIP context help explain where the infrastructure lives and which network provider or hosting layer it maps to.
+
+  ## Redirect analysis
+
+  Redirect chains are especially valuable for phishing campaigns, affiliate abuse, and cloaking behavior.
+
+  <DocsCallout variant="warning" title="Scan interpretation">
+    A single indicator rarely proves compromise. Hackura Sentinel AI groups signals into evidence so analysts can see the full chain.
+  </DocsCallout>
+
+  ## Threat indicators
+
+  Indicators include suspicious certificates, newly registered domains, mismatched hostnames, payload hosts, malicious paths, and known bad destinations.
+
+  ## Example response
+
+  <DocsTerminal title="Scan JSON response">{`{
+  "scan_id": "scan_01H",
+  "url": "https://example.com",
+  "risk_level": "MEDIUM",
+  "confidence": 94.2,
+  "recon_data": {
+    "dns_records": ["A", "CNAME"],
+    "redirect_chain": ["https://example.com", "https://login-example.com"],
+    "asn_info": { "asn_number": 13335, "organization": "Cloudflare" }
+  }
+}`}</DocsTerminal>
+</DocsPage>

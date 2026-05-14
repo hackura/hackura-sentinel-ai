@@ -1,0 +1,37 @@
+import { DocsPage } from '@/components/docs/docs-page';
+import { DocsTerminal } from '@/components/docs/docs-terminal';
+import { DocsCallout } from '@/components/docs/docs-callout';
+import { CLI_TOC } from '@/content/docs/page-content';
+
+<DocsPage
+  eyebrow="CLI"
+  title="Terminal-first threat intelligence"
+  description="Run scans from your shell with a familiar workflow that fits analysts, automation, and CI pipelines."
+  toc={CLI_TOC}
+>
+  ## Commands
+
+  <DocsTerminal title="Hackura Sentinel AI CLI">sentinel scan example.com
+sentinel domain google.com
+sentinel ip 1.1.1.1
+sentinel explain example.com</DocsTerminal>
+
+  ## Output preview
+
+  <DocsTerminal title="Scan result">Risk: HIGH
+Confidence: 98.1%
+Graph nodes: 24
+Redirect chain: 3 hops
+DNS signals: 7</DocsTerminal>
+
+  ## Workflow
+
+  1. Query the entity.
+  2. Enrich the response.
+  3. Inspect the graph.
+  4. Export or automate the findings.
+
+  <DocsCallout variant="tip" title="Operational fit">
+    The CLI is meant to mirror the product model so operators can switch between terminal and dashboard without losing context.
+  </DocsCallout>
+</DocsPage>

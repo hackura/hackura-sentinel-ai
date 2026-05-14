@@ -1,0 +1,47 @@
+import Link from 'next/link';
+import { DocsPage } from '@/components/docs/docs-page';
+import { DocsTerminal } from '@/components/docs/docs-terminal';
+import { DocsCallout } from '@/components/docs/docs-callout';
+import { DOC_API_PAGES } from '@/content/docs/navigation';
+import { API_HOME_TOC } from '@/content/docs/page-content';
+
+<DocsPage
+  eyebrow="API reference"
+  title="Programmatic threat intelligence"
+  description="The Hackura Sentinel AI API exposes the same intelligence pipeline used by the dashboard so applications, CLI tooling, and automation can all share one source of truth."
+  toc={API_HOME_TOC}
+>
+  ## Overview
+
+  The API is designed to support scanning, graph intelligence, threat lookup, and authenticated programmatic access.
+
+  ## Authentication
+
+  All requests should include an API key header.
+
+  <DocsTerminal title="Authentication">X-API-Key: hk_live_...</DocsTerminal>
+
+  ## Endpoints
+
+  <div className="grid gap-4 md:grid-cols-2">
+    {DOC_API_PAGES.map((page) => (
+      <Link key={page.href} href={page.href} className="rounded-2xl border border-zinc-800/70 bg-black/40 p-4 transition hover:border-purple-500/40 hover:bg-zinc-900/60">
+        <div className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-300">{page.badge || 'API'}</div>
+        <div className="mt-2 text-lg font-semibold text-white">{page.title}</div>
+        <div className="mt-2 text-sm leading-7 text-zinc-400">{page.description}</div>
+      </Link>
+    ))}
+  </div>
+
+  ## Error handling
+
+  Use standard JSON error payloads with stable codes so client applications can handle failures consistently.
+
+  <DocsCallout variant="warning" title="Production behavior">
+    Keep retries bounded. The API should be deterministic, observable, and safe to automate.
+  </DocsCallout>
+
+  ## Nested reference
+
+  Future API sections can be added beneath this route without changing the layout or content model.
+</DocsPage>

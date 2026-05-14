@@ -1,0 +1,38 @@
+import { DocsPage } from '@/components/docs/docs-page';
+import { DocsTerminal } from '@/components/docs/docs-terminal';
+import { DocsCallout } from '@/components/docs/docs-callout';
+import { API_SCANS_TOC } from '@/content/docs/page-content';
+
+<DocsPage
+  eyebrow="API reference"
+  title="Scans"
+  description="Launch URL and infrastructure scans from automation, dashboards, or security tooling."
+  toc={API_SCANS_TOC}
+>
+  ## Endpoint
+
+  `POST /scan/url`
+
+  ## Request body
+
+  <DocsTerminal title="Request">{`{
+  "url": "https://example.com",
+  "use_graph": true,
+  "depth": "standard"
+}`}</DocsTerminal>
+
+  ## Response body
+
+  <DocsTerminal title="Response">{`{
+  "scan_id": "scan_01H",
+  "status": "complete",
+  "risk_level": "MEDIUM",
+  "confidence": 94.2
+}`}</DocsTerminal>
+
+  ## Errors
+
+  <DocsCallout variant="warning" title="Validation">
+    Return structured validation errors when the URL is invalid, blocked, or malformed.
+  </DocsCallout>
+</DocsPage>

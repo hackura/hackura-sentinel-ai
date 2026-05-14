@@ -1,0 +1,65 @@
+import { DocsPage } from '@/components/docs/docs-page';
+import { DocsCallout } from '@/components/docs/docs-callout';
+import { GlassCard } from '@/components/ui';
+import { RISK_ENGINE_TOC } from '@/content/docs/page-content';
+
+<DocsPage
+  eyebrow="Risk engine"
+  title="Explainable threat scoring"
+  description="The risk engine merges deterministic indicators with weighted intelligence and model-assisted interpretation so every score can be explained."
+  toc={RISK_ENGINE_TOC}
+>
+  ## Scoring model
+
+  Risk scores combine reputation, infrastructure, redirect analysis, domain age, certificate signals, and graph associations.
+
+  ## Confidence calculation
+
+  Confidence is separate from risk. A highly confident benign result can still be safe, while an uncertain result may require more corroboration.
+
+  ## Intelligence weighting
+
+  Weights are adjusted by signal type and source reliability.
+
+  - Observed infrastructure carries more weight than inferred context.
+  - Strong provider corroboration raises confidence.
+  - Conflicting evidence lowers certainty, not just score.
+
+  ## Sample table
+
+  <GlassCard className="border-zinc-800/60 bg-zinc-950/60" hover={false}>
+    <div className="overflow-x-auto">
+      <table className="min-w-full text-left text-sm">
+        <thead>
+          <tr className="border-b border-zinc-800/70 text-zinc-200">
+            <th className="px-4 py-3">Signal</th>
+            <th className="px-4 py-3">Weight</th>
+            <th className="px-4 py-3">Impact</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-zinc-800/70">
+          {[
+            ['Newly registered domain', '0.25', 'Raises suspicion'],
+            ['Malicious redirect chain', '0.40', 'Strong risk indicator'],
+            ['Known bad ASN', '0.20', 'Infrastructure context'],
+            ['Certificate mismatch', '0.15', 'Trust degradation'],
+          ].map(([signal, weight, impact]) => (
+            <tr key={signal}>
+              <td className="px-4 py-3 text-white">{signal}</td>
+              <td className="px-4 py-3 text-purple-300">{weight}</td>
+              <td className="px-4 py-3 text-zinc-400">{impact}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </GlassCard>
+
+  ## AI-assisted analysis
+
+  The model does not replace analyst judgment. It helps explain the signal mix, summarize evidence, and surface likely relationships to review.
+
+  <DocsCallout variant="note" title="Analyst-friendly output">
+    Hackura Sentinel AI should feel like a system that helps users reason about risk instead of hiding the logic behind a black box.
+  </DocsCallout>
+</DocsPage>

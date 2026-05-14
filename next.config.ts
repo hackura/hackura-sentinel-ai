@@ -1,8 +1,15 @@
-import type { NextConfig } from "next";
+import createMDX from '@next/mdx';
+import type { NextConfig } from 'next';
+
+const withMDX = createMDX({
+  extension: /\.mdx?$/,
+});
 
 const nextConfig: NextConfig = {
   // Optimize for production builds
   productionBrowserSourceMaps: false,
+
+  pageExtensions: ['ts', 'tsx', 'md', 'mdx'],
 
   // Use Turbopack for faster builds (default in Next.js 16)
   // Removed webpack config to allow Turbopack to handle bundling
@@ -57,4 +64,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withMDX(nextConfig);

@@ -1,0 +1,30 @@
+import { DocsPage } from '@/components/docs/docs-page';
+import { DocsCallout } from '@/components/docs/docs-callout';
+import { FAQ_TOC } from '@/content/docs/page-content';
+
+<DocsPage
+  eyebrow="FAQ"
+  title="Common questions"
+  description="Quick answers for developers integrating the platform and operators using it in production."
+  toc={FAQ_TOC}
+>
+  ## Questions
+
+  **Is the dashboard required?**
+
+  No. The API and CLI can be used independently.
+
+  **Does the graph persist?**
+
+  Yes. Graph intelligence is stored so analysis can be revisited and expanded later.
+
+  **Can I add nested docs later?**
+
+  Yes. The docs architecture already supports additional route segments.
+
+  ## Support
+
+  <DocsCallout variant="note" title="Need help?">
+    Keep the docs structure modular so support, API, and product guides can grow without reworking the shell.
+  </DocsCallout>
+</DocsPage>

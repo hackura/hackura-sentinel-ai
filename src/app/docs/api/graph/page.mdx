@@ -1,0 +1,41 @@
+import { DocsPage } from '@/components/docs/docs-page';
+import { DocsTerminal } from '@/components/docs/docs-terminal';
+import { DocsCallout } from '@/components/docs/docs-callout';
+import { API_GRAPH_TOC } from '@/content/docs/page-content';
+
+<DocsPage
+  eyebrow="API reference"
+  title="Graph"
+  description="Fetch graph intelligence payloads that power the threat relationship explorer."
+  toc={API_GRAPH_TOC}
+>
+  ## Graph endpoint
+
+  `GET /graph/:scan_id`
+
+  ## Nodes
+
+  Nodes expose labels, risk levels, node types, and metadata so clients can render intelligence objects directly.
+
+  ## Edges
+
+  Edges should carry relationship labels and source/target identifiers.
+
+  ## Traversal
+
+  Graph payloads are optimized for inspection, not just storage. Keep relationships explainable and stable.
+
+  <DocsCallout variant="tip" title="Storage">
+    The graph is persisted in Neo4j AuraDB (managed). The backend uses the `neo4j-driver` to store and traverse nodes and relationships; the API returns traversal-optimized payloads for clients.
+  </DocsCallout>
+
+  <DocsTerminal title="Graph node">{`{
+  "id": "domain:example.com",
+  "type": "domain",
+  "risk_level": "HIGH"
+}`}</DocsTerminal>
+
+  <DocsCallout variant="tip" title="Graph clients">
+    Frontend clients can render the graph directly and still derive tooltips, scores, and path context.
+  </DocsCallout>
+</DocsPage>

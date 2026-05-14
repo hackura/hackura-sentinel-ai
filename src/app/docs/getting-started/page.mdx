@@ -1,0 +1,63 @@
+import { DocsPage } from '@/components/docs/docs-page';
+import { DocsCallout } from '@/components/docs/docs-callout';
+import { DocsTerminal } from '@/components/docs/docs-terminal';
+import { GETTING_STARTED_TOC } from '@/content/docs/page-content';
+
+<DocsPage
+  eyebrow="Getting started"
+  title="Build your first intelligence workflow"
+  description="Hackura Sentinel AI gives you a secure entry point for scanning URLs, enriching infrastructure, and exploring graph relationships from the dashboard or the API."
+  toc={GETTING_STARTED_TOC}
+>
+  ## Platform overview
+
+  Hackura Sentinel AI combines a browser-based dashboard, a graph explorer, a secure API layer, and a risk engine that turns raw signals into analyst-ready intelligence.
+
+  <DocsCallout variant="note" title="Who this is for">
+    Developers, analysts, SOC operators, and founders who need fast threat triage without sacrificing architecture or trust.
+  </DocsCallout>
+
+  ## Authentication
+
+  Sign in with email/password or OAuth, then finish onboarding once so your profile and workspace preferences are stored in Supabase.
+
+  - Supabase Auth manages sessions.
+  - First-time users are redirected to onboarding.
+  - Onboarding completion unlocks the dashboard experience.
+
+  ## First scan
+
+  Once you are signed in, launch a scan from the dashboard or the API.
+
+  <DocsTerminal title="First scan">{`curl -X POST https://api.hackura.app/scan/url \\
+  -H 'Content-Type: application/json' \\
+  -H 'X-API-Key: hk_live_...' \\
+  -d '{"url":"https://example.com","use_graph":true}'`}</DocsTerminal>
+
+  ## Dashboard overview
+
+  The dashboard provides:
+
+  1. High-level risk summaries
+  2. Live scan progress
+  3. Threat graph exploration
+  4. History and reporting
+  5. Settings, profile, and API controls
+
+  ## Onboarding
+
+  The onboarding flow collects display name, username, role, and discovery source so the platform can adapt the experience to security teams, builders, and operators.
+
+  ## Architecture summary
+
+  The architecture is intentionally layered:
+
+  | Layer | Purpose |
+  | --- | --- |
+  | Frontend | Dashboard, docs, and graph visualization |
+  | API | Scan orchestration and public access |
+  | Recon | URL, DNS, IP, redirect, and certificate analysis |
+  | Intelligence | Threat enrichment and score weighting |
+  | Graph | Node and relationship inference |
+  | Storage | AuraDB / Neo4j persistence |
+</DocsPage>

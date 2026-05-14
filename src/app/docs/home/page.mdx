@@ -1,0 +1,100 @@
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+import { HOME_FEATURES } from '@/content/docs/page-content';
+import { DocsHeroScene } from '@/components/docs/docs-hero-scene';
+import { DocsFeatureGrid } from '@/components/docs/docs-feature-grid';
+import { DocsTerminal } from '@/components/docs/docs-terminal';
+import { DocsCallout } from '@/components/docs/docs-callout';
+
+export default function DocsHomePage() {
+  return (
+    <div className="space-y-10 pb-10">
+      <section className="grid gap-8 xl:grid-cols-[1.1fr_0.9fr] xl:items-center">
+        <div className="space-y-6">
+          <div className="inline-flex rounded-full border border-purple-500/20 bg-purple-500/10 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.32em] text-purple-200">
+            Developer portal
+          </div>
+          <div className="space-y-4">
+            <h1 className="max-w-3xl text-5xl font-black tracking-tight text-white md:text-6xl">
+              Hackura Sentinel AI Documentation
+            </h1>
+            <p className="max-w-2xl text-lg leading-8 text-zinc-400 md:text-xl">
+              AI-powered threat intelligence, infrastructure analysis, and graph-based cybersecurity workflows.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/docs/getting-started" className="inline-flex items-center gap-2 rounded-full bg-purple-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-purple-400">
+              Get Started <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link href="/docs/api" className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950/80 px-5 py-3 text-sm font-semibold text-zinc-200 transition hover:border-purple-500/40 hover:text-white">
+              View API
+            </Link>
+            <Link href="/docs/cli" className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950/80 px-5 py-3 text-sm font-semibold text-zinc-200 transition hover:border-purple-500/40 hover:text-white">
+              CLI Docs
+            </Link>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[
+              ['Real-time scans', 'URL, domain, IP, and infrastructure analysis'],
+              ['Graph-native', 'Relationship mapping with confidence scoring'],
+              ['Production-grade', 'Enterprise authentication and secure APIs'],
+            ].map(([title, text]) => (
+              <div key={title} className="rounded-2xl border border-zinc-800/60 bg-black/40 p-4">
+                <div className="text-sm font-semibold text-white">{title}</div>
+                <div className="mt-2 text-sm leading-7 text-zinc-500">{text}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <DocsHeroScene />
+      </section>
+
+      <DocsFeatureGrid items={HOME_FEATURES} />
+
+      <section className="grid gap-6 xl:grid-cols-[1fr_0.95fr]">
+        <div className="space-y-4">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.32em] text-zinc-500">Quick start</div>
+          <div className="rounded-3xl border border-zinc-800/60 bg-zinc-950/60 p-6 shadow-2xl shadow-black/30">
+            <div className="text-xl font-bold text-white">Start scanning in one request</div>
+            <p className="mt-3 text-sm leading-7 text-zinc-400">
+              Use the API to launch a scan immediately, or use the CLI for local workflows and SOC triage.
+            </p>
+            <div className="mt-5 space-y-4">
+              <DocsTerminal title="Quick scan">{`curl -X POST https://api.hackura.app/scan/url \\
+  -H 'Content-Type: application/json' \\
+  -d '{"url":"https://example.com","use_graph":true}'`}</DocsTerminal>
+              <DocsTerminal title="CLI">sentinel scan example.com
+sentinel domain google.com
+sentinel ip 1.1.1.1</DocsTerminal>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.32em] text-zinc-500">System preview</div>
+          <div className="space-y-4 rounded-3xl border border-zinc-800/60 bg-zinc-950/60 p-6">
+            <div className="rounded-2xl border border-purple-500/10 bg-purple-500/5 p-4">
+              <div className="text-sm font-semibold text-white">Dashboard preview</div>
+              <p className="mt-2 text-sm leading-7 text-zinc-400">
+                Built for analysts, developers, and operators who need graph-aware intelligence at a glance.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-zinc-800/70 bg-black/40 p-4">
+              <div className="text-sm font-semibold text-white">Graph preview</div>
+              <p className="mt-2 text-sm leading-7 text-zinc-400">
+                Nodes, edges, clusters, and redirect paths are surfaced in the visual intelligence workspace.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <DocsCallout variant="tip" title="Built for teams">
+        <p>
+          Hackura Sentinel AI documentation is structured like an enterprise developer portal so future sections can grow into nested API and product docs without redesigning the system.
+        </p>
+      </DocsCallout>
+    </div>
+  );
+}
