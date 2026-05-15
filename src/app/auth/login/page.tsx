@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { signInWithEmail, signInWithGitHub } from '@/lib/supabase';
+import { signInWithEmail, signInWithGitHub, signInWithGoogle } from '@/lib/supabase';
 import { GlassCard, Button } from '@/components/ui';
 import { BrandLogo } from '@/components/brand-logo';
 import { PublicNavbar } from '@/components/public-navbar';
@@ -15,6 +15,29 @@ function GitHubIcon() {
       <path
         fill="currentColor"
         d="M12 2C6.48 2 2 6.58 2 12.25c0 4.54 2.87 8.39 6.84 9.75.5.1.68-.22.68-.49 0-.24-.01-.87-.01-1.71-2.78.62-3.37-1.37-3.37-1.37-.46-1.2-1.12-1.52-1.12-1.52-.91-.64.07-.63.07-.63 1.01.07 1.55 1.06 1.55 1.06.9 1.57 2.36 1.12 2.94.86.09-.67.35-1.12.64-1.38-2.22-.26-4.56-1.13-4.56-5.03 0-1.11.38-2.02 1-2.73-.1-.26-.43-1.31.1-2.73 0 0 .82-.27 2.7 1.04a9.1 9.1 0 0 1 4.92 0c1.87-1.31 2.69-1.04 2.69-1.04.53 1.42.2 2.47.1 2.73.63.71 1 1.62 1 2.73 0 3.91-2.35 4.76-4.59 5.02.36.32.68.95.68 1.92 0 1.38-.01 2.49-.01 2.83 0 .27.18.6.69.49A10.24 10.24 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"
+      />
+    </svg>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
+      <path
+        fill="currentColor"
+        d="M21.35 11.1H12v3.9h5.36c-.23 1.24-.93 2.28-1.98 2.99v2.49h3.2c1.87-1.72 2.95-4.25 2.95-7.24 0-.69-.06-1.22-.18-1.84Z"
+      />
+      <path
+        fill="currentColor"
+        d="M12 22c2.67 0 4.91-.88 6.55-2.37l-3.2-2.49c-.88.59-2.01.94-3.35.94-2.58 0-4.77-1.74-5.55-4.08H3.1v2.56A10 10 0 0 0 12 22Z"
+      />
+      <path
+        fill="currentColor"
+        d="M6.45 13.99A5.97 5.97 0 0 1 6.13 12c0-.69.12-1.36.32-1.99V7.45H3.1A10 10 0 0 0 2 12c0 1.61.38 3.13 1.1 4.55l3.35-2.56Z"
+      />
+      <path
+        fill="currentColor"
+        d="M12 5.88c1.46 0 2.77.5 3.8 1.48l2.85-2.85C16.9 2.88 14.67 2 12 2A10 10 0 0 0 3.1 7.45l3.35 2.56C7.23 7.62 9.42 5.88 12 5.88Z"
       />
     </svg>
   );
@@ -57,6 +80,20 @@ export default function LoginPage() {
       if (error) throw error;
     } catch (err: any) {
       setError(err.message || 'Failed to sign in with GitHub');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { error } = await signInWithGoogle();
+      if (error) throw error;
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign in with Google');
     } finally {
       setLoading(false);
     }
@@ -170,6 +207,14 @@ export default function LoginPage() {
                 >
                   <GitHubIcon />
                   Sign in with GitHub
+                </button>
+                <button
+                  onClick={handleGoogleLogin}
+                  disabled={loading}
+                  className="w-full flex items-center justify-center gap-2 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white font-medium transition-all disabled:opacity-50"
+                >
+                  <GoogleIcon />
+                  Sign in with Google
                 </button>
               </div>
 

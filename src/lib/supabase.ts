@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type User } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -31,11 +31,23 @@ export async function signInWithEmail(email: string, password: string) {
 }
 
 // Sign in with GitHub
-export async function signInWithGitHub() {
+export async function signInWithGitHub(redirectTo?: string) {
   return supabase.auth.signInWithOAuth({
     provider: 'github',
     options: {
-      redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`,
+      redirectTo:
+        redirectTo || `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`,
+    },
+  });
+}
+
+// Sign in with Google
+export async function signInWithGoogle(redirectTo?: string) {
+  return supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo:
+        redirectTo || `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`,
     },
   });
 }
@@ -57,7 +69,7 @@ export async function getSession() {
 }
 
 // Listen to auth state changes
-export function onAuthStateChange(callback: (user: any) => void) {
+export function onAuthStateChange(callback: (user: User | null) => void) {
   return supabase.auth.onAuthStateChange((_event, session) => {
     callback(session?.user || null);
   });
