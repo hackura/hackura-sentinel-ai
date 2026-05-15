@@ -49,15 +49,26 @@ export function CliLoginPage({ deviceId }: CliLoginPageProps) {
     const confirmBoundSession = async () => {
       try {
         isConfirmingRef.current = true;
+        
+        // Get current authenticated user
         const {
           data: { user },
           error: userError,
         } = await supabase.auth.getUser();
 
-        if (userError || !user || !user.email) {
-          return;
+        if (userError) {
+          console.error('[CLI Login] Error fetching user:', userError.message);
+          return; // User not authenticated yet, let them login
         }
 
+        if (!user || !user.email) {
+          console.log('[CLI Login] No authenticated user found');
+          return; // Not authenticated
+        }
+
+        console.log(`[CLI Login] User authenticated, confirming device authorization for device: ${deviceId.slice(0, 6)}...`);
+
+        // Confirm the authorization
         await confirmCliAuthorization({
           device_id: deviceId,
           user_id: user.id,
@@ -65,9 +76,15 @@ export function CliLoginPage({ deviceId }: CliLoginPageProps) {
         });
 
         hasConfirmedRef.current = true;
+        console.log('[CLI Login] Device authorization confirmed, redirecting to success page');
         router.replace(buildCliSuccessUrl());
       } catch (confirmError: unknown) {
-        console.error('CLI authorization confirm failed:', confirmError);
+        console.error('[CLI Login] Device authorization confirm failed:', confirmError);
+        hasConfirmedRef.current = true; // Prevent retries
+        
+        const errorMessage = confirmError instanceof Error ? confirmError.message : 'Authorization failed';
+        console.error('[CLI Login] Error details:', errorMessage);
+        
         router.replace(buildCliErrorUrl('confirm-failed', deviceId));
       } finally {
         isConfirmingRef.current = false;
@@ -81,6 +98,7 @@ export function CliLoginPage({ deviceId }: CliLoginPageProps) {
     event.preventDefault();
 
     if (!isValidDeviceId(deviceId)) {
+      console.error('[CLI Login] Invalid device ID');
       router.replace(buildCliErrorUrl('invalid-device'));
       return;
     }
@@ -90,11 +108,14 @@ export function CliLoginPage({ deviceId }: CliLoginPageProps) {
       setError(null);
       isConfirmingRef.current = true;
 
+      console.log('[CLI Login] Attempting email login...');
       const { error: signInError } = await signInWithEmail(email, password);
 
       if (signInError) {
         throw signInError;
       }
+
+      console.log('[CLI Login] Email authentication successful');
 
       const {
         data: { user },
@@ -102,8 +123,10 @@ export function CliLoginPage({ deviceId }: CliLoginPageProps) {
       } = await supabase.auth.getUser();
 
       if (userError || !user || !user.email) {
-        throw new Error('Unable to verify your Supabase session.');
+        throw new Error('Unable to verify your Supabase session after login.');
       }
+
+      console.log(`[CLI Login] Confirming device authorization for device: ${deviceId.slice(0, 6)}...`);
 
       await confirmCliAuthorization({
         device_id: deviceId,
@@ -112,20 +135,23 @@ export function CliLoginPage({ deviceId }: CliLoginPageProps) {
       });
 
       hasConfirmedRef.current = true;
-
+      console.log('[CLI Login] Device authorization confirmed, redirecting to success page');
       router.replace(buildCliSuccessUrl());
     } catch (loginError: unknown) {
-      console.error('CLI login failed:', loginError);
-      setError(getErrorMessage(loginError, 'Authentication failed.'));
-      router.replace(buildCliErrorUrl('auth-failed', deviceId));
-    } finally {
+      console.error('[CLI Login] Email login failed:', loginError);
+      const errorMsg = getErrorMessage(loginError, 'Authentication failed. Please check your credentials.');
+      setError(errorMsg);
       isConfirmingRef.current = false;
+      
+      // Don't redirect on error - let user retry
+    } finally {
       setLoading(false);
     }
   };
 
   const handleGitHubLogin = async () => {
     if (!isValidDeviceId(deviceId)) {
+      console.error('[CLI Login] Invalid device ID for GitHub login');
       router.replace(buildCliErrorUrl('invalid-device'));
       return;
     }
@@ -134,15 +160,23 @@ export function CliLoginPage({ deviceId }: CliLoginPageProps) {
     setError(null);
 
     try {
-      const { error: oauthError } = await signInWithGitHub(buildCliOAuthRedirect(deviceId));
+      console.log(`[CLI Login] Initiating GitHub OAuth for device: ${deviceId.slice(0, 6)}...`);
+      const redirectUrl = buildCliOAuthRedirect(deviceId);
+      console.log(`[CLI Login] GitHub OAuth redirect URL: ${redirectUrl}`);
+      
+      const { error: oauthError } = await signInWithGitHub(redirectUrl);
 
       if (oauthError) {
         throw oauthError;
       }
+      
+      // Note: If OAuth is successful, the user will be redirected away from this page
+      // When they return to /cli/login?device_id=..., the useEffect will confirm the authorization
     } catch (oauthError: unknown) {
-      console.error('GitHub OAuth failed:', oauthError);
-      setError(getErrorMessage(oauthError, 'GitHub authentication failed.'));
-      router.replace(buildCliErrorUrl('auth-failed', deviceId));
+      console.error('[CLI Login] GitHub OAuth failed:', oauthError);
+      const errorMsg = getErrorMessage(oauthError, 'GitHub authentication failed. Please try again.');
+      setError(errorMsg);
+      // Don't redirect on OAuth error - let user retry
     } finally {
       setLoading(false);
     }
@@ -150,6 +184,7 @@ export function CliLoginPage({ deviceId }: CliLoginPageProps) {
 
   const handleGoogleLogin = async () => {
     if (!isValidDeviceId(deviceId)) {
+      console.error('[CLI Login] Invalid device ID for Google login');
       router.replace(buildCliErrorUrl('invalid-device'));
       return;
     }
@@ -158,15 +193,23 @@ export function CliLoginPage({ deviceId }: CliLoginPageProps) {
     setError(null);
 
     try {
-      const { error: oauthError } = await signInWithGoogle(buildCliOAuthRedirect(deviceId));
+      console.log(`[CLI Login] Initiating Google OAuth for device: ${deviceId.slice(0, 6)}...`);
+      const redirectUrl = buildCliOAuthRedirect(deviceId);
+      console.log(`[CLI Login] Google OAuth redirect URL: ${redirectUrl}`);
+      
+      const { error: oauthError } = await signInWithGoogle(redirectUrl);
 
       if (oauthError) {
         throw oauthError;
       }
+      
+      // Note: If OAuth is successful, the user will be redirected away from this page
+      // When they return to /cli/login?device_id=..., the useEffect will confirm the authorization
     } catch (oauthError: unknown) {
-      console.error('Google OAuth failed:', oauthError);
-      setError(getErrorMessage(oauthError, 'Google authentication failed.'));
-      router.replace(buildCliErrorUrl('auth-failed', deviceId));
+      console.error('[CLI Login] Google OAuth failed:', oauthError);
+      const errorMsg = getErrorMessage(oauthError, 'Google authentication failed. Please try again.');
+      setError(errorMsg);
+      // Don't redirect on OAuth error - let user retry
     } finally {
       setLoading(false);
     }
@@ -205,7 +248,7 @@ export function CliLoginPage({ deviceId }: CliLoginPageProps) {
             subtitle="Terminal tool is requesting secure access to your account. Authenticate only if you initiated this flow from the Hackura Sentinel AI CLI."
             footer={
               <p className="text-xs leading-5 text-zinc-500">
-                Your browser session is verified through Supabase first, then the backend binds the device request.
+                Your browser session is verified. Each CLI login attempt is logged with a unique device ID. If you did not initiate this login, please deny access and review your account security.
               </p>
             }
           >

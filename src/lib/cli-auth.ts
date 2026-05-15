@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { supabase } from './supabase';
 
 const CLI_LOGIN_PATH = '/cli/login';
 const CLI_SUCCESS_PATH = '/cli/success';
@@ -60,17 +61,96 @@ export function buildCliOAuthRedirect(deviceId: string) {
   return url.toString();
 }
 
+/**
+ * Confirms CLI authorization by linking the current Supabase session to the device.
+ * Now connects DIRECTLY to Supabase to update the cli_device_sessions table.
+ * 
+ * Flow:
+ * 1. Retrieves the access_token (JWT) from Supabase session
+ * 2. Updates cli_device_sessions table directly with the token
+ * 3. Falls back to backend API if Supabase update fails
+ */
 export async function confirmCliAuthorization(payload: {
   device_id: string;
   user_id: string;
   email: string;
 }) {
-  return axios.post(CLI_CONFIRM_ENDPOINT, payload, {
-    timeout: 10000,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+  // Validate payload
+  if (!isValidDeviceId(payload.device_id)) {
+    throw new Error(`Invalid device ID format: ${payload.device_id}`);
+  }
+
+  if (!payload.user_id || !payload.email) {
+    throw new Error('User ID and email are required for CLI authorization');
+  }
+
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  
+  if (sessionError || !session) {
+    throw new Error('No active Supabase session found. Please log in again.');
+  }
+
+  if (!session.access_token) {
+    throw new Error('No access token found in session');
+  }
+
+  try {
+    // Attempt direct Supabase update - this is the primary flow
+    console.log(`[CLI Auth] Linking device session: ${maskDeviceId(payload.device_id)}`);
+    
+    const { error } = await supabase
+      .from('cli_device_sessions')
+      .update({
+        user_id: payload.user_id,
+        email: payload.email,
+        token: session.access_token,
+        status: 'authenticated',
+        authenticated_at: new Date().toISOString(),
+      })
+      .eq('device_id', payload.device_id)
+      .eq('status', 'pending');
+
+    if (error) {
+      // Check if it's an RLS policy issue (most common with Supabase direct updates)
+      if (error.code === 'PGRST116') {
+        console.warn(
+          `[CLI Auth] RLS policy denied update. This is expected if cli_device_sessions RLS is not configured. Device: ${maskDeviceId(payload.device_id)}`
+        );
+      } else {
+        console.error(`[CLI Auth] Supabase update failed (${error.code}): ${error.message}`);
+      }
+      
+      // Fallback to backend API if direct Supabase update fails
+      console.log(`[CLI Auth] Attempting fallback to backend confirmation API...`);
+      
+      try {
+        await axios.post(CLI_CONFIRM_ENDPOINT, {
+          ...payload,
+          token: session.access_token
+        }, {
+          timeout: 10000,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+        });
+        
+        console.log(`[CLI Auth] Backend confirmation successful for device: ${maskDeviceId(payload.device_id)}`);
+        return { success: true, method: 'backend' };
+      } catch (backendError) {
+        console.error(`[CLI Auth] Backend confirmation also failed:`, backendError);
+        throw new Error(
+          'Could not link device session. Please ensure your Supabase RLS policies are configured correctly.'
+        );
+      }
+    }
+
+    console.log(`[CLI Auth] Successfully linked device session: ${maskDeviceId(payload.device_id)}`);
+    return { success: true, method: 'supabase' };
+  } catch (error) {
+    console.error(`[CLI Auth] Authorization confirmation failed:`, error);
+    throw error;
+  }
 }
 
 export function getCliFailureMessage(reason?: string | string[]) {
