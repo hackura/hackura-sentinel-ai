@@ -80,8 +80,8 @@ export async function confirmCliAuthorization(payload: {
     throw new Error(`Invalid device ID format: ${payload.device_id}`);
   }
 
-  if (!payload.user_id || !payload.email) {
-    throw new Error('User ID and email are required for CLI authorization');
+  if (!payload.email) {
+    throw new Error('Email is required for CLI authorization');
   }
 
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -101,7 +101,9 @@ export async function confirmCliAuthorization(payload: {
     const { error } = await supabase
       .from('cli_device_sessions')
       .update({
-        user_id: payload.user_id,
+        // Do NOT set `user_id` here so the anonymous/CLI poll can still
+        // read the token row. The CLI will poll unauthenticated and must
+        // be able to see the `token` field while `user_id` remains NULL.
         email: payload.email,
         token: session.access_token,
         status: 'authenticated',
