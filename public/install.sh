@@ -7,6 +7,7 @@ set -e
 
 # Configuration
 REPO_URL="https://github.com/hackura/sentinel-cli"
+PROJECT_NAME="sentinel-cli"
 BINARY_NAME="sentinel"
 INSTALL_DIR="/usr/local/bin"
 
@@ -29,22 +30,22 @@ case "${ARCH}" in
     *) echo -e "${RED}Unsupported architecture: ${ARCH}${NC}"; exit 1 ;;
 esac
 
-# Construct download URL (matching GoReleaser naming: sentinel_linux_amd64.tar.gz)
-DOWNLOAD_URL="${REPO_URL}/releases/latest/download/${BINARY_NAME}_${OS}_${ARCH}.tar.gz"
+# Construct download URL (matching GoReleaser naming: sentinel-cli_linux_amd64.tar.gz)
+DOWNLOAD_URL="${REPO_URL}/releases/latest/download/${PROJECT_NAME}_${OS}_${ARCH}.tar.gz"
 TMP_DIR=$(mktemp -d)
 
 echo -e "Checking system: ${OS}/${ARCH}..."
 
 # Download archive
 echo -e "Downloading ${BINARY_NAME}..."
-curl -L -o "${TMP_DIR}/${BINARY_NAME}.tar.gz" "${DOWNLOAD_URL}" || {
+curl -L -o "${TMP_DIR}/${PROJECT_NAME}.tar.gz" "${DOWNLOAD_URL}" || {
     echo -e "${RED}Error: Failed to download binary. Please check if the release exists.${NC}"
     exit 1
 }
 
 # Extract binary
 echo -e "Extracting ${BINARY_NAME}..."
-tar -xzf "${TMP_DIR}/${BINARY_NAME}.tar.gz" -C "${TMP_DIR}"
+tar -xzf "${TMP_DIR}/${PROJECT_NAME}.tar.gz" -C "${TMP_DIR}"
 
 # Make executable
 chmod +x "${TMP_DIR}/${BINARY_NAME}"
