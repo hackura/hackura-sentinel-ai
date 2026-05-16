@@ -459,7 +459,7 @@ function SSLAnalysisCard({ data }: { data: LiveScanData }) {
         {sslData.issuer && (
           <div className="flex justify-between items-start">
             <span className="text-zinc-600">Issuer</span>
-            <span className="text-blue-400 text-right max-w-[50%]">{sslData.issuer}</span>
+            <span className="text-blue-400 text-right max-w-[50%] break-words leading-tight">{sslData.issuer}</span>
           </div>
         )}
         {sslData.expiry_date && (
@@ -535,8 +535,13 @@ function IOCRelationshipsCard({ data }: { data: LiveScanData }) {
         {iocs.length > 0 ? (
           iocs.slice(0, 6).map((ioc, idx) => (
             <div key={idx} className="p-2 bg-red-950/20 rounded border border-red-800/30">
-              <p className="text-red-300 font-mono mb-1">{ioc.indicator}</p>
-              <p className="text-zinc-600 text-[9px]">{ioc.type}</p>
+              <p className="text-red-300 font-mono mb-1 break-all leading-tight">{ioc.indicator}</p>
+              <p className="text-zinc-500 text-[9px] uppercase tracking-wider mb-1">{ioc.type}</p>
+              {ioc.context && (
+                <p className="text-zinc-400 text-[9px] leading-relaxed break-words mt-1 pt-1 border-t border-red-900/20 italic">
+                  {ioc.context}
+                </p>
+              )}
             </div>
           ))
         ) : (
