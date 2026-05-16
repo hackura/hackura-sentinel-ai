@@ -444,30 +444,14 @@ function SSLAnalysisCard({ data }: { data: LiveScanData }) {
     );
   }
 
-  const isValid = sslData.valid !== false && new Date(sslData.expiry_date) > new Date();
-
   return (
-    <GlassCard className={isValid ? 'border-green-500/10' : 'border-red-500/10'}>
+    <GlassCard className="border-blue-500/10">
       <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-3">SSL Analysis</h3>
       <div className="space-y-2 text-[11px]">
-        <div className="flex justify-between">
-          <span className="text-zinc-600">Status</span>
-          <span className={isValid ? 'text-green-400' : 'text-red-400'}>
-            {isValid ? 'Valid' : 'Invalid/Expired'}
-          </span>
-        </div>
         {sslData.issuer && (
           <div className="flex justify-between items-start">
             <span className="text-zinc-600">Issuer</span>
             <span className="text-blue-400 text-right max-w-[50%] break-words leading-tight">{sslData.issuer}</span>
-          </div>
-        )}
-        {sslData.expiry_date && (
-          <div className="flex justify-between">
-            <span className="text-zinc-600">Expires</span>
-            <span className="text-blue-400 font-mono">
-              {new Date(sslData.expiry_date).toLocaleDateString()}
-            </span>
           </div>
         )}
       </div>
