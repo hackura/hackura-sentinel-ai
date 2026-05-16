@@ -149,7 +149,6 @@ export default function HomePageClient({ structuredData }: { structuredData: obj
             <ul className="space-y-3">
               <li><Link href="/terms" className="hover:text-white transition">Terms & Conditions</Link></li>
               <li><Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link></li>
-              <li><Link href="/docs/api" className="hover:text-white transition">API Docs</Link></li>
             </ul>
           </div>
 

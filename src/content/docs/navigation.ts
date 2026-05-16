@@ -76,13 +76,6 @@ export const DOC_NAV: DocNavGroup[] = [
     title: 'Developers',
     items: [
       {
-        title: 'API',
-        description: 'API entry point and nested auth, scans, graph, and threats docs.',
-        href: '/docs/api',
-        summary: 'API reference',
-        section: 'Developers',
-      },
-      {
         title: 'Integrations',
         description: 'VirusTotal, AbuseIPDB, Supabase, OpenAI, and Neo4j connectors.',
         href: '/docs/integrations',
