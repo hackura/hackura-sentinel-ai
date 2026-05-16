@@ -59,9 +59,16 @@ export default function HomePageClient({ structuredData }: { structuredData: obj
                 Launch Dashboard
               </Button>
             </Link>
-            <Button variant="secondary" size="lg" className="w-full sm:w-auto">
-              Learn More
-            </Button>
+            <Link href="/docs" className="w-full sm:w-auto">
+              <Button variant="secondary" size="lg" className="w-full">
+                Documentation
+              </Button>
+            </Link>
+            <Link href="/docs/cli" className="w-full sm:w-auto">
+              <Button variant="secondary" size="lg" className="w-full">
+                Try the CLI
+              </Button>
+            </Link>
           </div>
         </motion.div>
 
