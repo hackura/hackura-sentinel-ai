@@ -1,30 +1,22 @@
-import { ImageResponse } from 'next/og';
+import { readFile } from 'fs/promises';
+import { resolve } from 'path';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 export const size = { width: 32, height: 32 };
 export const contentType = 'image/png';
 
-export default function Icon() {
-  return new ImageResponse(
-    (
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: '#050816',
-          borderRadius: '8px',
-          color: '#38bdf8',
-          fontSize: '20px',
-          fontWeight: 'bold',
-          border: '2px solid #38bdf8',
-        }}
-      >
-        H
-      </div>
-    ),
-    { ...size }
-  );
+export default async function Icon() {
+  try {
+    const imageBuffer = await readFile(resolve('./public/cli.png'));
+    return new Response(imageBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'image/png',
+      },
+    });
+  } catch (error) {
+    console.error('Failed to load favicon:', error);
+    // Fallback to a simple generated icon
+    throw new Error('Icon file not found');
+  }
 }

@@ -39,7 +39,7 @@ export function BrandLogo({
         <div className="absolute inset-0 rounded-[1.1rem] bg-[radial-gradient(circle_at_30%_25%,rgba(250,204,21,0.18),transparent_36%),linear-gradient(145deg,#0f172a_0%,#050816_54%,#020617_100%)] shadow-[0_0_0_1px_rgba(148,163,184,0.18),0_18px_40px_rgba(2,6,23,0.65),0_0_28px_rgba(34,211,238,0.16)]" />
         <div className="absolute inset-[1.25px] rounded-[1rem] border border-white/10" />
         <img
-          src="/logo.svg"
+          src="/cli.png"
           alt="Hackura Sentinel AI logo"
           className="absolute inset-0 h-full w-full rounded-[1.05rem] object-cover"
         />
