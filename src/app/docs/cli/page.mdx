@@ -9,6 +9,18 @@ import { CLI_TOC } from '@/content/docs/page-content';
   description="Run scans from your shell with a familiar workflow that fits analysts, automation, and CI pipelines."
   toc={CLI_TOC}
 >
+  ## Installation
+
+  The easiest way to install the Sentinel CLI is via our automated installation script. This script detects your OS and architecture, downloads the correct binary, and installs it to `/usr/local/bin`.
+
+  <DocsTerminal title="Quick Install">
+    curl -fsSL https://sentinel.hackura.app/install.sh | bash
+  </DocsTerminal>
+
+  <DocsCallout variant="note" title="Manual Installation">
+    You can also download the pre-compiled binaries directly from our [GitHub Releases](https://github.com/hackura/sentinel-cli/releases).
+  </DocsCallout>
+
   ## Commands
 
   <DocsTerminal title="Hackura Sentinel AI CLI">sentinel scan example.com
