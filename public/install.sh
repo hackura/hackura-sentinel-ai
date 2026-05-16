@@ -29,30 +29,37 @@ case "${ARCH}" in
     *) echo -e "${RED}Unsupported architecture: ${ARCH}${NC}"; exit 1 ;;
 esac
 
-# Construct download URL (assuming GitHub Releases format)
-# You should update this to your actual binary hosting location
-DOWNLOAD_URL="${REPO_URL}/releases/latest/download/${BINARY_NAME}-${OS}-${ARCH}"
+# Construct download URL (matching GoReleaser naming: sentinel_linux_amd64.tar.gz)
+DOWNLOAD_URL="${REPO_URL}/releases/latest/download/${BINARY_NAME}_${OS}_${ARCH}.tar.gz"
+TMP_DIR=$(mktemp -d)
 
 echo -e "Checking system: ${OS}/${ARCH}..."
 
-# Download binary
+# Download archive
 echo -e "Downloading ${BINARY_NAME}..."
-curl -L -o "${BINARY_NAME}" "${DOWNLOAD_URL}" || {
-    echo -e "${RED}Error: Failed to download binary. Please check the URL.${NC}"
+curl -L -o "${TMP_DIR}/${BINARY_NAME}.tar.gz" "${DOWNLOAD_URL}" || {
+    echo -e "${RED}Error: Failed to download binary. Please check if the release exists.${NC}"
     exit 1
 }
 
+# Extract binary
+echo -e "Extracting ${BINARY_NAME}..."
+tar -xzf "${TMP_DIR}/${BINARY_NAME}.tar.gz" -C "${TMP_DIR}"
+
 # Make executable
-chmod +x "${BINARY_NAME}"
+chmod +x "${TMP_DIR}/${BINARY_NAME}"
 
 # Move to bin directory
 echo -e "Installing to ${INSTALL_DIR}..."
 if [ -w "${INSTALL_DIR}" ]; then
-    mv "${BINARY_NAME}" "${INSTALL_DIR}/${BINARY_NAME}"
+    mv "${TMP_DIR}/${BINARY_NAME}" "${INSTALL_DIR}/${BINARY_NAME}"
 else
     echo -e "${CYAN}Root privileges required to install to ${INSTALL_DIR}${NC}"
-    sudo mv "${BINARY_NAME}" "${INSTALL_DIR}/${BINARY_NAME}"
+    sudo mv "${TMP_DIR}/${BINARY_NAME}" "${INSTALL_DIR}/${BINARY_NAME}"
 fi
+
+# Cleanup
+rm -rf "${TMP_DIR}"
 
 echo -e "${GREEN}✓ Installation complete!${NC}"
 echo -e "Run ${CYAN}${BINARY_NAME} status${NC} to verify your installation."
