@@ -83,7 +83,7 @@ export default function SignupPage() {
 
       setSuccess(true);
       setTimeout(() => {
-        router.push('/auth/login');
+        router.push(`/auth/confirm-email?email=${encodeURIComponent(email)}`);
       }, 2000);
     } catch (err: any) {
       setError(err.message || 'Failed to sign up');
@@ -160,9 +160,9 @@ export default function SignupPage() {
                   animate={{ opacity: 1, y: 0 }}
                   className="mb-4 p-3 bg-green-900/30 border border-green-700/50 rounded-lg"
                 >
-                  <p className="text-green-300 text-sm">
-                    ✓ Account created! Redirecting to login...
-                  </p>
+                    <p className="text-green-300 text-sm">
+                      ✓ Account created! Check your email to confirm your account to continue.
+                    </p>
                 </motion.div>
               )}
 
