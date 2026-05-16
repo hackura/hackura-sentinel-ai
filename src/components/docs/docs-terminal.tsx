@@ -1,4 +1,6 @@
-import { ReactNode, useState } from 'react';
+'use client';
+
+import { type ReactNode, useState } from 'react';
 import { GlassCard } from '@/components/ui';
 import { Copy, Check } from 'lucide-react';
 
